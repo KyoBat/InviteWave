@@ -226,3 +226,66 @@ exports.sendResetPasswordEmail = async (email, resetToken) => {
     throw new Error(`Failed to send password reset email: ${error.message}`);
   }
 };
+
+// Note: Ceci représente uniquement les nouvelles méthodes à ajouter au service existant
+
+/**
+ * Envoie une notification à l'organisateur lorsqu'un invité réserve un cadeau
+ * @param {string} to - Email de l'organisateur
+ * @param {Object} data - Données pour le template d'email
+ * @param {string} data.eventName - Nom de l'événement
+ * @param {string} data.guestName - Nom de l'invité qui a réservé
+ * @param {string} data.giftName - Nom du cadeau réservé
+ * @param {number} data.quantity - Quantité réservée
+ * @param {string} data.message - Message de l'invité (optionnel)
+ */
+exports.sendGiftReservationNotification = async (to, data) => {
+  const subject = `[${data.eventName}] Nouvelle réservation de cadeau`;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Nouvelle réservation de cadeau</h2>
+      <p>Bonjour,</p>
+      <p>Un invité a réservé un élément de votre liste de cadeaux pour ${data.eventName}.</p>
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Invité:</strong> ${data.guestName}</p>
+        <p><strong>Cadeau:</strong> ${data.giftName}</p>
+        <p><strong>Quantité:</strong> ${data.quantity}</p>
+        ${data.message !== 'Aucun message' ? `<p><strong>Message:</strong> ${data.message}</p>` : ''}
+      </div>
+      <p>Vous pouvez consulter votre liste de cadeaux sur la page de détail de votre événement.</p>
+      <p>Cordialement,<br>L'équipe InviteWave</p>
+    </div>
+  `;
+  
+  return await sendEmail(to, subject, html);
+};
+
+/**
+ * Envoie une notification à l'organisateur lorsqu'un invité annule sa réservation
+ * @param {string} to - Email de l'organisateur
+ * @param {Object} data - Données pour le template d'email
+ * @param {string} data.eventName - Nom de l'événement
+ * @param {string} data.guestName - Nom de l'invité qui a annulé
+ * @param {string} data.giftName - Nom du cadeau concerné
+ */
+exports.sendGiftCancellationNotification = async (to, data) => {
+  const subject = `[${data.eventName}] Annulation d'une réservation de cadeau`;
+  
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Annulation d'une réservation de cadeau</h2>
+      <p>Bonjour,</p>
+      <p>Un invité a annulé sa réservation d'un élément de votre liste de cadeaux pour ${data.eventName}.</p>
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Invité:</strong> ${data.guestName}</p>
+        <p><strong>Cadeau:</strong> ${data.giftName}</p>
+      </div>
+      <p>Cet élément est maintenant disponible pour d'autres invités.</p>
+      <p>Vous pouvez consulter votre liste de cadeaux sur la page de détail de votre événement.</p>
+      <p>Cordialement,<br>L'équipe InviteWave</p>
+    </div>
+  `;
+  
+  return await sendEmail(to, subject, html);
+};
