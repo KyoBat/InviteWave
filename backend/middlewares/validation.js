@@ -1,10 +1,24 @@
 // middlewares/validation.js
+import { validationResult } from 'express-validator';
+
+// Middleware pour express-validator
+export function validateRequest(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ 
+      message: 'Validation error', 
+      errors: errors.array() 
+    });
+  }
+  next();
+}
+
 /**
  * Middleware to validate request body against a schema
  * @param {Object} schema - Joi schema
  * @returns {Function} - Express middleware
  */
-exports.validateBody = (schema) => {
+export function validateBody(schema) {
     return (req, res, next) => {
       const { error } = schema.validate(req.body);
       if (error) {
@@ -15,14 +29,14 @@ exports.validateBody = (schema) => {
       }
       next();
     };
-  };
+  }
   
   /**
    * Middleware to validate request params against a schema
    * @param {Object} schema - Joi schema
    * @returns {Function} - Express middleware
    */
-  exports.validateParams = (schema) => {
+  export function   validateParams(schema) {
     return (req, res, next) => {
       const { error } = schema.validate(req.params);
       if (error) {
@@ -33,14 +47,14 @@ exports.validateBody = (schema) => {
       }
       next();
     };
-  };
+  }
   
   /**
    * Middleware to validate request query against a schema
    * @param {Object} schema - Joi schema
    * @returns {Function} - Express middleware
    */
-  exports.validateQuery = (schema) => {
+  export function   validateQuery(schema) {
     return (req, res, next) => {
       const { error } = schema.validate(req.query);
       if (error) {
@@ -51,5 +65,7 @@ exports.validateBody = (schema) => {
       }
       next();
     };
-  };
+  }
+
+  
   

@@ -94,3 +94,19 @@ export const reorderGifts = async (eventId, items) => {
 export const getGuestReservations = async (eventId, guestId) => {
   return api.get(`/events/${eventId}/gifts/reservations/${guestId}`);
 };
+
+export default {
+  getAllGifts,
+  getGiftById,
+  createGift,
+  updateGift,
+  deleteGift,
+  assignGift,
+  unassignGift,
+  reorderGifts,
+  getGuestReservations
+};
+
+export const getGiftItems = (eventId) => {
+  return api.get(`/api/events/${eventId}/gifts`); // Ajoutez /api si nécessaire
+};

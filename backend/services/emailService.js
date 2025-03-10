@@ -227,7 +227,6 @@ exports.sendResetPasswordEmail = async (email, resetToken) => {
   }
 };
 
-// Note: Ceci représente uniquement les nouvelles méthodes à ajouter au service existant
 
 /**
  * Envoie une notification à l'organisateur lorsqu'un invité réserve un cadeau

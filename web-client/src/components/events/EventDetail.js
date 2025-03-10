@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { eventService } from '../../services';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import GiftList from '../gifts/GiftList';
 
 // Nouvel import pour le composant de gestion des cadeaux
 import GiftManagement from '../gifts/GiftManagement';
@@ -199,8 +200,12 @@ const EventDetail = () => {
         </TabPanel>
         
         <TabPanel>
-          {/* Nouvel onglet pour les Cadeaux */}
+          {         <div className="event-detail-section">
+  <h2>Liste de cadeaux/objets</h2>
+
+</div>}
           <GiftManagement isOrganizer={isOrganizer} enableReordering={isOrganizer} />
+ 
         </TabPanel>
       </Tabs>
       
@@ -225,6 +230,7 @@ const EventDetail = () => {
               </button>
             </div>
           </div>
+          
         </div>
       )}
     </div>
@@ -232,3 +238,4 @@ const EventDetail = () => {
 };
 
 export default EventDetail;
+

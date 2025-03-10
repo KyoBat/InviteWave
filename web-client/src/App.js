@@ -34,8 +34,10 @@ import CreateInvitation from './components/invitations/CreateInvitation';
 // Gifts
 import GiftForm from './components/gifts/GiftForm';
 import GiftDetail from './components/gifts/GiftDetail';
+import GiftManagement from './components/gifts/GiftManagement';
 
 import './styles/main.css';
+import './styles/gifts.css';
 
 function App() {
   return (
@@ -55,6 +57,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<ProfileSettings />} />
               
+              
               {/* Events routes */}
               <Route path="/events" element={<EventList />} />
               <Route path="/events/create" element={<EventForm isEdit={false} />} />
@@ -73,10 +76,12 @@ function App() {
               <Route path="/events/:eventId/invitations/create" element={<CreateInvitation />} />
               
               {/* Gifts routes */}
-              <Route path="/events/:eventId/gifts" element={<EventDetail />} />
+              <Route path="/events/:eventId/gifts" element={<GiftManagement />} />
+              <Route path="/dashboard/events/:eventId/gifts" element={<GiftManagement />} />
               <Route path="/events/:eventId/gifts/create" element={<GiftForm />} />
               <Route path="/events/:eventId/gifts/:giftId" element={<GiftDetail isOrganizer={true} />} />
               <Route path="/events/:eventId/gifts/:giftId/edit" element={<GiftForm />} />
+              
             </Route>
 
             {/* Redirect root to dashboard or login */}

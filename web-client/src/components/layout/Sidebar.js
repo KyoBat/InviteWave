@@ -1,8 +1,11 @@
 // src/components/layout/Sidebar.js
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
+import { Gift } from 'react-feather';
 
 const Sidebar = () => {
+  const { eventId } = useParams();
+  
   return (
     <div className="sidebar">
       <div className="sidebar-header">
@@ -25,14 +28,20 @@ const Sidebar = () => {
           <span>Guests</span>
         </NavLink>
         
+        {eventId && (
+          <NavLink 
+            to={`/dashboard/events/${eventId}/gifts`} 
+            className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}
+          >
+            <Gift size={18} />
+            <span>Cadeaux</span>
+          </NavLink>
+        )}
+        
         <NavLink to="/profile" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
           <i className="profile-icon"></i>
           <span>Profile</span>
         </NavLink>
-      </div>
-
-      <div className="sidebar-footer">
-        <p>Version 1.0.0</p>
       </div>
     </div>
   );
