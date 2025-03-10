@@ -4,6 +4,9 @@ import { useParams } from 'react-router-dom';
 import { invitationService } from '../../services';
 import { format } from 'date-fns';
 
+// Nouvel import pour le composant de liste de cadeaux
+import GiftList from '../gifts/GiftList';
+
 const PublicInvitation = () => {
   const [invitation, setInvitation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,6 +15,8 @@ const PublicInvitation = () => {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  // État pour suivre l'invité
+  const [guestId, setGuestId] = useState(null);
   
   const { code } = useParams();
 
@@ -28,6 +33,11 @@ const PublicInvitation = () => {
           setMessage(data.invitation.response.message || '');
           setSubmitted(true);
           setSubmitSuccess(true);
+        }
+        
+        // Récupérer l'ID de l'invité
+        if (data.invitation.guest) {
+          setGuestId(data.invitation.guest._id);
         }
       } catch (error) {
         setError('Invitation not found or has expired');
@@ -111,6 +121,11 @@ const PublicInvitation = () => {
   const eventDate = new Date(invitation.event.date);
   const formattedDate = format(eventDate, 'EEEE, MMMM d, yyyy');
   const formattedTime = format(eventDate, 'h:mm a');
+
+  // Déterminer si l'invité a confirmé sa présence
+  const isConfirmed = submitted && response === 'yes';
+  // Récupérer l'ID de l'événement
+  const eventId = invitation.event._id;
 
   return (
     <div className="public-invitation-container">
@@ -243,6 +258,17 @@ const PublicInvitation = () => {
                   </button>
                 </>
               )}
+            </div>
+          )}
+          
+          {/* Section liste de cadeaux */}
+          {isConfirmed && (
+            <div className="invitation-section gift-public-list">
+              <div className="invitation-section-header">
+                <h3>Liste de cadeaux</h3>
+                <p>Si vous souhaitez nous offrir un cadeau, voici quelques idées.</p>
+              </div>
+              <GiftList eventId={eventId} guestId={guestId} isOrganizer={false} isPublic={true} />
             </div>
           )}
         </div>

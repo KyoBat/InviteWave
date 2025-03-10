@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { eventService } from '../../services';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+
+// Nouvel import pour le composant de gestion des cadeaux
+import GiftManagement from '../gifts/GiftManagement';
 
 const EventDetail = () => {
   const [event, setEvent] = useState(null);
@@ -58,6 +63,9 @@ const EventDetail = () => {
   const formattedDate = format(eventDate, 'EEEE, MMMM d, yyyy');
   const formattedTime = format(eventDate, 'h:mm a');
   
+  // On assume que l'organisateur est l'utilisateur courant (à adapter selon votre logique d'application)
+  const isOrganizer = true; // Cette valeur devrait être déterminée par votre logique d'application
+  
   return (
     <div className="event-detail-container">
       <div className="event-detail-header">
@@ -76,94 +84,125 @@ const EventDetail = () => {
         </div>
       </div>
       
-      <div className="event-detail-content">
-        <div className="event-detail-main">
-          <div className="event-cover">
-            {event.coverImage ? (
-              <img src={event.coverImage} alt={event.name} />
-            ) : (
-              <div className="event-no-image">
-                <span>{event.name.substring(0, 7).toUpperCase()}</span>
+      <Tabs>
+        <TabList>
+          <Tab>Détails</Tab>
+          <Tab>Invités</Tab>
+          <Tab>Invitations</Tab>
+          <Tab>Cadeaux</Tab> {/* Nouvel onglet */}
+        </TabList>
+        
+        <TabPanel>
+          {/* Contenu de l'onglet Détails */}
+          <div className="event-detail-content">
+            <div className="event-detail-main">
+              <div className="event-cover">
+                {event.coverImage ? (
+                  <img src={event.coverImage} alt={event.name} />
+                ) : (
+                  <div className="event-no-image">
+                    <span>{event.name.substring(0, 7).toUpperCase()}</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          
-          <div className="event-info">
-            <div className="event-info-item">
-              <i className="calendar-icon"></i>
-              <div>
-                <strong>Date</strong>
-                <p>{formattedDate}</p>
-              </div>
-            </div>
-            
-            <div className="event-info-item">
-              <i className="clock-icon"></i>
-              <div>
-                <strong>Time</strong>
-                <p>{formattedTime}</p>
-              </div>
-            </div>
-            
-            <div className="event-info-item">
-              <i className="location-icon"></i>
-              <div>
-                <strong>Location</strong>
-                <p>{event.location.address}</p>
+              
+              <div className="event-info">
+                <div className="event-info-item">
+                  <i className="calendar-icon"></i>
+                  <div>
+                    <strong>Date</strong>
+                    <p>{formattedDate}</p>
+                  </div>
+                </div>
                 
-              </div>
-            </div>
-            
-            {event.theme && (
-              <div className="event-info-item">
-                <i className="theme-icon"></i>
-                <div>
-                  <strong>Theme</strong>
-                  <p>{event.theme}</p>
+                <div className="event-info-item">
+                  <i className="clock-icon"></i>
+                  <div>
+                    <strong>Time</strong>
+                    <p>{formattedTime}</p>
+                  </div>
+                </div>
+                
+                <div className="event-info-item">
+                  <i className="location-icon"></i>
+                  <div>
+                    <strong>Location</strong>
+                    <p>{event.location.address}</p>
+                    
+                  </div>
+                </div>
+                
+                {event.theme && (
+                  <div className="event-info-item">
+                    <i className="theme-icon"></i>
+                    <div>
+                      <strong>Theme</strong>
+                      <p>{event.theme}</p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="event-info-item">
+                  <i className="status-icon"></i>
+                  <div>
+                    <strong>Status</strong>
+                    <p>
+                      <span className={`status-badge status-badge-${event.status}`}>
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
+              
+              {event.description && (
+                <div className="event-description">
+                  <h3>Description</h3>
+                  <p>{event.description}</p>
+                </div>
+              )}
+            </div>
             
-            <div className="event-info-item">
-              <i className="status-icon"></i>
-              <div>
-                <strong>Status</strong>
-                <p>
-                  <span className={`status-badge status-badge-${event.status}`}>
-                    {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                  </span>
-                </p>
+            <div className="event-detail-sidebar">
+              <div className="invitation-actions">
+                <h3>Invitations</h3>
+                <Link to={`/events/${id}/invitations`} className="button-primary">
+                  Manage Invitations
+                </Link>
+                <Link to={`/events/${id}/guests`} className="button-secondary">
+                  Manage Guests
+                </Link>
+              </div>
+              
+              <div className="quick-stats">
+                <h3>Quick Stats</h3>
+                <div className="stats-placeholder">
+                  <p>Visit the invitations page for detailed statistics</p>
+                </div>
               </div>
             </div>
           </div>
-          
-          {event.description && (
-            <div className="event-description">
-              <h3>Description</h3>
-              <p>{event.description}</p>
-            </div>
-          )}
-        </div>
+        </TabPanel>
         
-        <div className="event-detail-sidebar">
-          <div className="invitation-actions">
-            <h3>Invitations</h3>
-            <Link to={`/events/${id}/invitations`} className="button-primary">
-              Manage Invitations
-            </Link>
-            <Link to={`/events/${id}/guests`} className="button-secondary">
-              Manage Guests
-            </Link>
+        <TabPanel>
+          {/* Contenu de l'onglet Invités */}
+          <div className="guests-tab-content">
+            <p>Contenu de l'onglet Invités à implémenter</p>
           </div>
-          
-          <div className="quick-stats">
-            <h3>Quick Stats</h3>
-            <div className="stats-placeholder">
-              <p>Visit the invitations page for detailed statistics</p>
-            </div>
+        </TabPanel>
+        
+        <TabPanel>
+          {/* Contenu de l'onglet Invitations */}
+          <div className="invitations-tab-content">
+            <p>Contenu de l'onglet Invitations à implémenter</p>
           </div>
-        </div>
-      </div>
+        </TabPanel>
+        
+        <TabPanel>
+          {/* Nouvel onglet pour les Cadeaux */}
+          <GiftManagement isOrganizer={isOrganizer} enableReordering={isOrganizer} />
+        </TabPanel>
+      </Tabs>
       
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

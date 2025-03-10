@@ -31,8 +31,12 @@ import GuestImport from './components/guests/GuestImport';
 import InvitationList from './components/invitations/InvitationList';
 import CreateInvitation from './components/invitations/CreateInvitation';
 
+// Gifts
+import GiftForm from './components/gifts/GiftForm';
+import GiftDetail from './components/gifts/GiftDetail';
+
 import './styles/main.css';
-<img src="/uploads/3f024eba-f4e1-4319-8bd6-5589556fd630.jpeg" alt="Bon"></img>
+
 function App() {
   return (
     <Router>
@@ -67,6 +71,12 @@ function App() {
               {/* Invitations routes */}
               <Route path="/events/:eventId/invitations" element={<InvitationList />} />
               <Route path="/events/:eventId/invitations/create" element={<CreateInvitation />} />
+              
+              {/* Gifts routes */}
+              <Route path="/events/:eventId/gifts" element={<EventDetail />} />
+              <Route path="/events/:eventId/gifts/create" element={<GiftForm />} />
+              <Route path="/events/:eventId/gifts/:giftId" element={<GiftDetail isOrganizer={true} />} />
+              <Route path="/events/:eventId/gifts/:giftId/edit" element={<GiftForm />} />
             </Route>
 
             {/* Redirect root to dashboard or login */}
