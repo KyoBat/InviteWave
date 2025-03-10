@@ -1,0 +1,141 @@
+/* src/styles/auth.css */
+
+/* Auth Container Styles */
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #f8f9fa;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 450px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+  }
+  
+  .auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .auth-logo {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #5c6bc0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .auth-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  /* Form Styles */
+  .login-form-container,
+  .register-form-container,
+  .forgot-password-form-container,
+  .reset-password-form-container {
+    width: 100%;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .form-group input:focus {
+    border-color: #5c6bc0;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(92, 107, 192, 0.2);
+  }
+  
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  
+  .success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  
+  /* Button Styles */
+  .submit-button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #5c6bc0;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .submit-button:hover {
+    background-color: #3f51b5;
+  }
+  
+  .submit-button:disabled {
+    background-color: #a4a6b3;
+    cursor: not-allowed;
+  }
+  
+  /* Links Styles */
+  .form-links {
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+  
+  .form-links a {
+    display: block;
+    color: #5c6bc0;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-links a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .auth-card {
+      padding: 1.5rem;
+    }
+  }
