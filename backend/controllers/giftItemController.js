@@ -1,31 +1,33 @@
-// backend/controllers/giftItemController.js
+// controllers/giftItemController.js
+const mongoose = require('mongoose');
 const GiftItem = require('../models/giftItem');
 const Event = require('../models/events');
 const Guest = require('../models/guest');
 const { emailService } = require('../services');
 
 /**
- * Créer un nouvel élément de cadeau/objet
+ * Create a new gift item
  * @route POST /api/events/:eventId/gifts
- * @access Private (organisateur)
+ * @access Private (organizer)
  */
 exports.createGiftItem = async (req, res) => {
   try {
     const { eventId } = req.params;
     
-    // Vérifier si l'événement existe et appartient à l'utilisateur
-    const event = await Event.findOne({ _id: eventId, userId: req.user.id });
+    // Check if event exists and belongs to the user
+    //const event = await Event.findOne({ _id: eventId, userId: req.user.id });
+    const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Événement non trouvé ou vous n\'avez pas les droits nécessaires' 
+        message: 'Event not found or you do not have permission to access it' 
       });
     }
     
-    // Compter les éléments existants pour définir l'ordre
+    // Count existing items to set order
     const itemCount = await GiftItem.countDocuments({ eventId });
     
-    // Créer le nouvel élément
+    // Create the new item
     const giftItem = new GiftItem({
       ...req.body,
       eventId,
@@ -48,48 +50,47 @@ exports.createGiftItem = async (req, res) => {
 };
 
 /**
- * Récupérer tous les éléments de cadeau pour un événement
+ * Get all gift items for an event
  * @route GET /api/events/:eventId/gifts
- * @access Public (invités et organisateur)
+ * @access Public (guests and organizer)
  */
 exports.getAllGiftItems = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { guestId, status } = req.query;
     
-    // Vérifier si l'événement existe
+    // Check if event exists
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid event ID format'
+      });
+    }
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Événement non trouvé'
+        message: 'Event not found'
       });
     }
     
-    // Construire le filtre de base
+    // Build base filter
     let filter = { eventId };
     
-    // Ajouter un filtre par statut si spécifié
-    if (status) {
-      // Cette logique doit être implémentée dans une requête d'agrégation
-      // car status est un champ virtuel
-      // Pour simplifier, nous allons filtrer après la requête
-    }
-    
-    // Récupérer les éléments
+    // Retrieve items
     let giftItems = await GiftItem.find(filter)
-      .sort({ isEssential: -1, order: 1 }) // Trier par essentiel puis par ordre
+      .sort({ isEssential: -1, order: 1 }) // Sort by essential then by order
       .populate({
         path: 'reservations.guestId',
         select: 'name email phone'
       });
     
-    // Filtrer par statut si nécessaire
+    // Filter by status if needed
     if (status) {
       giftItems = giftItems.filter(item => item.status === status);
     }
     
-    // Si un guestId est fourni, ajouter un champ pour indiquer si l'invité a réservé chaque cadeau
+    // If a guestId is provided, add a field to indicate if guest has reserved each gift
     if (guestId) {
       giftItems = giftItems.map(item => {
         const giftObj = item.toObject();
@@ -99,20 +100,20 @@ exports.getAllGiftItems = async (req, res) => {
       });
     }
     
-    // Vérifier si l'utilisateur est l'organisateur
+    // Check if user is the organizer
     const isOrganizer = event.userId.toString() === (req.user ? req.user.id : '');
     
-    // Si ce n'est pas l'organisateur, limiter les informations des réservations
+    // If not the organizer, limit reservation information
     if (!isOrganizer) {
       giftItems = giftItems.map(item => {
         const filteredItem = typeof item.toObject === 'function' ? item.toObject() : item;
         
-        // Supprimer les informations détaillées des réservations pour les non-organisateurs
+        // Remove detailed reservation information for non-organizers
         if (filteredItem.reservations && filteredItem.reservations.length > 0) {
           filteredItem.reservations = filteredItem.reservations.map(res => ({
             quantity: res.quantity,
-            // Conserver uniquement le prénom pour la confidentialité
-            guestName: res.guestId ? res.guestId.name.split(' ')[0] : 'Un invité'
+            // Keep only the first name for privacy
+            guestName: res.guestId ? res.guestId.name.split(' ')[0] : 'A guest'
           }));
         }
         
@@ -135,16 +136,16 @@ exports.getAllGiftItems = async (req, res) => {
 };
 
 /**
- * Récupérer un élément de cadeau spécifique
+ * Get a specific gift item
  * @route GET /api/events/:eventId/gifts/:giftId
- * @access Public (invités et organisateur)
+ * @access Public (guests and organizer)
  */
 exports.getGiftItemById = async (req, res) => {
   try {
     const { eventId, giftId } = req.params;
     const { guestId } = req.query;
     
-    // Vérifier si l'élément existe et appartient à l'événement
+    // Check if item exists and belongs to the event
     const giftItem = await GiftItem.findOne({ _id: giftId, eventId })
       .populate({
         path: 'reservations.guestId',
@@ -154,29 +155,29 @@ exports.getGiftItemById = async (req, res) => {
     if (!giftItem) {
       return res.status(404).json({
         success: false,
-        message: 'Élément non trouvé'
+        message: 'Gift item not found'
       });
     }
     
-    // Vérifier si l'utilisateur est l'organisateur
+    // Check if user is the organizer
     const event = await Event.findById(eventId);
     const isOrganizer = event.userId.toString() === (req.user ? req.user.id : '');
     
     let result = giftItem.toObject();
     
-    // Si un guestId est fourni, ajouter un champ pour indiquer si l'invité a réservé ce cadeau
+    // If a guestId is provided, add a field to indicate if guest has reserved this item
     if (guestId) {
       result.isReservedByCurrentGuest = giftItem.isReservedByGuest(guestId);
       result.currentGuestReservation = giftItem.getGuestReservation(guestId);
     }
     
-    // Si ce n'est pas l'organisateur, limiter les informations des réservations
+    // If not the organizer, limit reservation information
     if (!isOrganizer) {
       if (result.reservations && result.reservations.length > 0) {
         result.reservations = result.reservations.map(res => ({
           quantity: res.quantity,
-          // Conserver uniquement le prénom pour la confidentialité
-          guestName: res.guestId ? res.guestId.name.split(' ')[0] : 'Un invité'
+          // Keep only the first name for privacy
+          guestName: res.guestId ? res.guestId.name.split(' ')[0] : 'A guest'
         }));
       }
     }
@@ -195,27 +196,27 @@ exports.getGiftItemById = async (req, res) => {
 };
 
 /**
- * Mettre à jour un élément de cadeau
+ * Update a gift item
  * @route PUT /api/events/:eventId/gifts/:giftId
- * @access Private (organisateur)
+ * @access Private (organizer)
  */
 exports.updateGiftItem = async (req, res) => {
   try {
     const { eventId, giftId } = req.params;
     
-    // Vérifier si l'événement appartient à l'utilisateur
+    // Check if event belongs to user
     const event = await Event.findOne({ _id: eventId, userId: req.user.id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Événement non trouvé ou vous n\'avez pas les droits nécessaires' 
+        message: 'Event not found or you do not have permission to access it' 
       });
     }
     
-    // Exclure certains champs de la mise à jour
+    // Exclude specific fields from update
     const { reservations, quantityReserved, ...updateData } = req.body;
     
-    // Mettre à jour l'élément
+    // Update the item
     const giftItem = await GiftItem.findOneAndUpdate(
       { _id: giftId, eventId },
       updateData,
@@ -225,7 +226,7 @@ exports.updateGiftItem = async (req, res) => {
     if (!giftItem) {
       return res.status(404).json({
         success: false,
-        message: 'Élément non trouvé'
+        message: 'Gift item not found'
       });
     }
     
@@ -243,34 +244,34 @@ exports.updateGiftItem = async (req, res) => {
 };
 
 /**
- * Supprimer un élément de cadeau
+ * Delete a gift item
  * @route DELETE /api/events/:eventId/gifts/:giftId
- * @access Private (organisateur)
+ * @access Private (organizer)
  */
 exports.deleteGiftItem = async (req, res) => {
   try {
     const { eventId, giftId } = req.params;
     
-    // Vérifier si l'événement appartient à l'utilisateur
+    // Check if event belongs to user
     const event = await Event.findOne({ _id: eventId, userId: req.user.id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Événement non trouvé ou vous n\'avez pas les droits nécessaires' 
+        message: 'Event not found or you do not have permission to access it' 
       });
     }
     
-    // Supprimer l'élément
+    // Delete the item
     const giftItem = await GiftItem.findOneAndDelete({ _id: giftId, eventId });
     
     if (!giftItem) {
       return res.status(404).json({
         success: false,
-        message: 'Élément non trouvé'
+        message: 'Gift item not found'
       });
     }
     
-    // Réorganiser les indices des éléments restants
+    // Reorder remaining items
     await GiftItem.updateMany(
       { 
         eventId, 
@@ -281,7 +282,7 @@ exports.deleteGiftItem = async (req, res) => {
     
     res.status(200).json({
       success: true,
-      message: 'Élément supprimé avec succès'
+      message: 'Gift item successfully deleted'
     });
     
   } catch (error) {
@@ -293,9 +294,9 @@ exports.deleteGiftItem = async (req, res) => {
 };
 
 /**
- * Réserver un élément de cadeau
+ * Reserve a gift item
  * @route POST /api/events/:eventId/gifts/:giftId/assign
- * @access Public (invités identifiés)
+ * @access Public (identified guests)
  */
 exports.assignGiftItem = async (req, res) => {
   try {
@@ -305,46 +306,46 @@ exports.assignGiftItem = async (req, res) => {
     if (!guestId || !quantity) {
       return res.status(400).json({
         success: false,
-        message: 'Les paramètres guestId et quantity sont requis'
+        message: 'guestId and quantity parameters are required'
       });
     }
     
-    // Vérifier si l'invité existe et est associé à l'événement
+    // Check if guest exists and is associated with the event
     const guest = await Guest.findOne({ _id: guestId, eventId });
     if (!guest) {
       return res.status(404).json({
         success: false,
-        message: 'Invité non trouvé ou non associé à cet événement'
+        message: 'Guest not found or not associated with this event'
       });
     }
     
-    // Vérifier si l'élément existe
+    // Check if item exists
     const giftItem = await GiftItem.findOne({ _id: giftId, eventId });
     if (!giftItem) {
       return res.status(404).json({
         success: false,
-        message: 'Élément non trouvé'
+        message: 'Gift item not found'
       });
     }
     
-    // Vérifier si l'invité a déjà réservé cet élément
+    // Check if guest has already reserved this item
     const existingReservation = giftItem.getGuestReservation(guestId);
     if (existingReservation) {
       return res.status(400).json({
         success: false,
-        message: 'Vous avez déjà réservé cet élément'
+        message: 'You have already reserved this item'
       });
     }
     
-    // Vérifier si la quantité disponible est suffisante
+    // Check if available quantity is sufficient
     if (giftItem.quantityReserved + parseInt(quantity) > giftItem.quantity) {
       return res.status(400).json({
         success: false,
-        message: 'Quantité disponible insuffisante'
+        message: 'Insufficient available quantity'
       });
     }
     
-    // Ajouter la réservation
+    // Add reservation
     giftItem.reservations.push({
       guestId,
       quantity: parseInt(quantity),
@@ -353,10 +354,10 @@ exports.assignGiftItem = async (req, res) => {
     
     await giftItem.save();
     
-    // Récupérer les informations de l'événement pour la notification
+    // Get event information for notification
     const event = await Event.findById(eventId).populate('userId', 'email name');
     
-    // Envoyer une notification à l'organisateur
+    // Send notification to organizer
     try {
       await emailService.sendGiftReservationNotification(
         event.userId.email,
@@ -365,17 +366,17 @@ exports.assignGiftItem = async (req, res) => {
           guestName: guest.name,
           giftName: giftItem.name,
           quantity,
-          message: message || 'Aucun message'
+          message: message || 'No message'
         }
       );
     } catch (emailError) {
-      console.error('Erreur lors de l\'envoi de l\'email de notification:', emailError);
-      // Ne pas bloquer la réponse en cas d'échec de l'envoi d'email
+      console.error('Error sending notification email:', emailError);
+      // Don't block response in case of email failure
     }
     
     res.status(200).json({
       success: true,
-      message: 'Élément réservé avec succès',
+      message: 'Item successfully reserved',
       data: giftItem
     });
     
@@ -388,9 +389,9 @@ exports.assignGiftItem = async (req, res) => {
 };
 
 /**
- * Annuler la réservation d'un élément de cadeau
+ * Cancel a gift item reservation
  * @route POST /api/events/:eventId/gifts/:giftId/unassign
- * @access Public (invités identifiés)
+ * @access Public (identified guests)
  */
 exports.unassignGiftItem = async (req, res) => {
   try {
@@ -400,29 +401,29 @@ exports.unassignGiftItem = async (req, res) => {
     if (!guestId) {
       return res.status(400).json({
         success: false,
-        message: 'Le paramètre guestId est requis'
+        message: 'guestId parameter is required'
       });
     }
     
-    // Vérifier si l'invité existe et est associé à l'événement
+    // Check if guest exists and is associated with the event
     const guest = await Guest.findOne({ _id: guestId, eventId });
     if (!guest) {
       return res.status(404).json({
         success: false,
-        message: 'Invité non trouvé ou non associé à cet événement'
+        message: 'Guest not found or not associated with this event'
       });
     }
     
-    // Vérifier si l'élément existe
+    // Check if item exists
     const giftItem = await GiftItem.findOne({ _id: giftId, eventId });
     if (!giftItem) {
       return res.status(404).json({
         success: false,
-        message: 'Élément non trouvé'
+        message: 'Gift item not found'
       });
     }
     
-    // Vérifier si l'invité a réservé cet élément
+    // Check if guest has reserved this item
     const existingReservationIndex = giftItem.reservations.findIndex(
       reservation => reservation.guestId.toString() === guestId
     );
@@ -430,19 +431,19 @@ exports.unassignGiftItem = async (req, res) => {
     if (existingReservationIndex === -1) {
       return res.status(400).json({
         success: false,
-        message: 'Vous n\'avez pas réservé cet élément'
+        message: 'You have not reserved this item'
       });
     }
     
-    // Supprimer la réservation
+    // Remove reservation
     giftItem.reservations.splice(existingReservationIndex, 1);
     
     await giftItem.save();
     
-    // Récupérer les informations de l'événement pour la notification
+    // Get event information for notification
     const event = await Event.findById(eventId).populate('userId', 'email name');
     
-    // Envoyer une notification à l'organisateur
+    // Send notification to organizer
     try {
       await emailService.sendGiftCancellationNotification(
         event.userId.email,
@@ -453,13 +454,13 @@ exports.unassignGiftItem = async (req, res) => {
         }
       );
     } catch (emailError) {
-      console.error('Erreur lors de l\'envoi de l\'email de notification:', emailError);
-      // Ne pas bloquer la réponse en cas d'échec de l'envoi d'email
+      console.error('Error sending notification email:', emailError);
+      // Don't block response in case of email failure
     }
     
     res.status(200).json({
       success: true,
-      message: 'Réservation annulée avec succès',
+      message: 'Reservation successfully canceled',
       data: giftItem
     });
     
@@ -472,9 +473,9 @@ exports.unassignGiftItem = async (req, res) => {
 };
 
 /**
- * Réorganiser l'ordre des éléments de cadeau
+ * Reorder gift items
  * @route PUT /api/events/:eventId/gifts/reorder
- * @access Private (organisateur)
+ * @access Private (organizer)
  */
 exports.reorderGiftItems = async (req, res) => {
   try {
@@ -484,20 +485,20 @@ exports.reorderGiftItems = async (req, res) => {
     if (!Array.isArray(items)) {
       return res.status(400).json({
         success: false,
-        message: 'Les données items doivent être un tableau d\'objets {id, order}'
+        message: 'items must be an array of objects {id, order}'
       });
     }
     
-    // Vérifier si l'événement appartient à l'utilisateur
+    // Check if event belongs to user
     const event = await Event.findOne({ _id: eventId, userId: req.user.id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Événement non trouvé ou vous n\'avez pas les droits nécessaires' 
+        message: 'Event not found or you do not have permission to access it' 
       });
     }
     
-    // Mettre à jour l'ordre de chaque élément
+    // Update order of each item
     const updatePromises = items.map(item => {
       return GiftItem.updateOne(
         { _id: item.id, eventId },
@@ -509,7 +510,7 @@ exports.reorderGiftItems = async (req, res) => {
     
     res.status(200).json({
       success: true,
-      message: 'Ordre des éléments mis à jour avec succès'
+      message: 'Item order successfully updated'
     });
     
   } catch (error) {
@@ -521,30 +522,30 @@ exports.reorderGiftItems = async (req, res) => {
 };
 
 /**
- * Obtenir les réservations d'un invité
+ * Get a guest's reservations
  * @route GET /api/events/:eventId/gifts/reservations/:guestId
- * @access Public (invité concerné)
+ * @access Public (concerned guest)
  */
 exports.getGuestReservations = async (req, res) => {
   try {
     const { eventId, guestId } = req.params;
     
-    // Vérifier si l'invité existe et est associé à l'événement
+    // Check if guest exists and is associated with the event
     const guest = await Guest.findOne({ _id: guestId, eventId });
     if (!guest) {
       return res.status(404).json({
         success: false,
-        message: 'Invité non trouvé ou non associé à cet événement'
+        message: 'Guest not found or not associated with this event'
       });
     }
     
-    // Trouver tous les éléments réservés par cet invité
+    // Find all items reserved by this guest
     const giftItems = await GiftItem.find({
       eventId,
       'reservations.guestId': guestId
     });
     
-    // Formater la réponse
+    // Format response
     const reservations = giftItems.map(item => {
       const reservation = item.getGuestReservation(guestId);
       return {

@@ -77,7 +77,6 @@ exports.login = async (req, res) => {
       ...tokens
     });
   } catch (error) {
-        // BUG FIX: Ajouter plus d'informations de logging pour le débogage
     console.error('Login error:', error);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
@@ -94,6 +93,12 @@ exports.refreshToken = async (req, res) => {
 
     // Verify refresh token
     const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret);
+    
+    // Check if user still exists
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ message: 'User no longer exists' });
+    }
     
     // Generate new tokens
     const tokens = generateTokens(decoded.userId);
@@ -115,7 +120,8 @@ exports.forgotPassword = async (req, res) => {
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      // Don't reveal if the user exists or not for security
+      return res.json({ message: 'If a user with that email exists, a password reset link has been sent' });
     }
 
     // Generate reset token
@@ -126,7 +132,7 @@ exports.forgotPassword = async (req, res) => {
     // Send reset password email
     await sendResetPasswordEmail(user.email, resetToken);
 
-    res.json({ message: 'Password reset email sent' });
+    res.json({ message: 'If a user with that email exists, a password reset link has been sent' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to process request', error: error.message });
   }
@@ -143,7 +149,7 @@ exports.resetPassword = async (req, res) => {
     // Find user
     const user = await User.findById(decoded.userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Invalid token' });
     }
 
     // Update password
@@ -155,6 +161,3 @@ exports.resetPassword = async (req, res) => {
     res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
-
-
-

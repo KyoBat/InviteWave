@@ -18,12 +18,12 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
       setIsReservedByCurrentGuest(gift.isReservedByCurrentGuest || false);
       setCurrentReservation(gift.currentGuestReservation || null);
       
-      // Calculer la quantité disponible
+      // Calculate available quantity
       const reserved = gift.quantityReserved || 0;
       const total = gift.quantity || 0;
       let available = total - reserved;
       
-      // Si l'invité a déjà réservé, ajouter sa quantité aux disponibles
+      // If the guest has already reserved, add their quantity to available
       if (gift.currentGuestReservation) {
         available += gift.currentGuestReservation.quantity;
         setQuantity(gift.currentGuestReservation.quantity);
@@ -41,15 +41,15 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
     
     try {
       if (!guestId) {
-        throw new Error('ID d\'invité requis pour la réservation');
+        throw new Error('Guest ID required for reservation');
       }
       
       if (quantity < 1) {
-        throw new Error('La quantité doit être au moins 1');
+        throw new Error('Quantity must be at least 1');
       }
       
       if (quantity > availableQuantity) {
-        throw new Error('Quantité demandée supérieure à la quantité disponible');
+        throw new Error('Requested quantity exceeds available quantity');
       }
       
       const assignData = {
@@ -58,7 +58,7 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
         message
       };
       
-      // Si l'invité a déjà réservé, annuler d'abord sa réservation
+      // If the guest has already reserved, cancel their reservation first
       if (isReservedByCurrentGuest) {
         await unassignGift(eventId, gift._id, guestId);
       }
@@ -68,11 +68,11 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
       if (response.data && response.data.success) {
         if (onComplete) onComplete();
       } else {
-        throw new Error('Erreur lors de la réservation');
+        throw new Error('Error during reservation');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la réservation:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error during reservation:', err);
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
     
     try {
       if (!guestId) {
-        throw new Error('ID d\'invité requis pour annuler la réservation');
+        throw new Error('Guest ID required to cancel reservation');
       }
       
       const response = await unassignGift(eventId, gift._id, guestId);
@@ -92,11 +92,11 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
       if (response.data && response.data.success) {
         if (onComplete) onComplete();
       } else {
-        throw new Error('Erreur lors de l\'annulation de la réservation');
+        throw new Error('Error canceling reservation');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de l\'annulation de la réservation:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error canceling reservation:', err);
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
     <div className="modal-overlay">
       <div className="modal-content gift-assignment-modal">
         <div className="modal-header">
-          <h3>Réserver un cadeau</h3>
+          <h3>Reserve a Gift</h3>
           <button className="modal-close" onClick={onClose} disabled={loading}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
@@ -122,14 +122,14 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
             <h3>{gift.name}</h3>
             <p className="gift-status">
               {isReservedByCurrentGuest ? (
-                <span>Vous avez déjà réservé ce cadeau</span>
+                <span>You have already reserved this gift</span>
               ) : isFullyReserved ? (
-                <span>Ce cadeau est déjà entièrement réservé</span>
+                <span>This gift is already fully reserved</span>
               ) : (
                 <span>
-                  {gift.quantityReserved}/{gift.quantity} déjà réservé(s)
+                  {gift.quantityReserved}/{gift.quantity} already reserved
                   {gift.quantityReserved > 0 && (
-                    <> par {gift.reservations ? gift.reservations.length : 0} personne(s)</>
+                    <> by {gift.reservations ? gift.reservations.length : 0} person(s)</>
                   )}
                 </span>
               )}
@@ -141,13 +141,13 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
           {isFullyReserved ? (
             <div className="unavailable-message">
               <FontAwesomeIcon icon={faGift} size="2x" />
-              <p>Ce cadeau est déjà entièrement réservé.</p>
+              <p>This gift is already fully reserved.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               {gift.quantity > 1 && (
                 <div className="quantity-select">
-                  <label htmlFor="quantity">Combien souhaitez-vous en apporter ?</label>
+                  <label htmlFor="quantity">How many would you like to bring?</label>
                   <input
                     type="number"
                     id="quantity"
@@ -158,17 +158,17 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
                     disabled={loading}
                     required
                   />
-                  <p className="form-note">Maximum disponible: {maxQuantity}</p>
+                  <p className="form-note">Maximum available: {maxQuantity}</p>
                 </div>
               )}
               
               <div className="message-input">
-                <label htmlFor="message">Message (optionnel)</label>
+                <label htmlFor="message">Message (optional)</label>
                 <textarea
                   id="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ex: Je l'apporterai emballé."
+                  placeholder="E.g., I'll bring it wrapped."
                   disabled={loading}
                 />
               </div>
@@ -180,7 +180,7 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
                   onClick={onClose}
                   disabled={loading}
                 >
-                  Annuler
+                  Cancel
                 </button>
                 
                 {isReservedByCurrentGuest && (
@@ -190,7 +190,7 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
                     onClick={handleUnassign}
                     disabled={loading}
                   >
-                    {loading ? 'Annulation...' : 'Annuler ma réservation'}
+                    {loading ? 'Canceling...' : 'Cancel my reservation'}
                   </button>
                 )}
                 
@@ -200,14 +200,14 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
                   disabled={loading || quantity < 1 || quantity > maxQuantity}
                 >
                   {loading ? (
-                    'Traitement...'
+                    'Processing...'
                   ) : isReservedByCurrentGuest ? (
                     <>
-                      <FontAwesomeIcon icon={faCheck} /> Mettre à jour
+                      <FontAwesomeIcon icon={faCheck} /> Update
                     </>
                   ) : (
                     <>
-                      <FontAwesomeIcon icon={faCheck} /> Confirmer
+                      <FontAwesomeIcon icon={faCheck} /> Confirm
                     </>
                   )}
                 </button>

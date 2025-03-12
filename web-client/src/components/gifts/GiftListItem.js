@@ -34,14 +34,14 @@ const GiftListItem = ({
   const confirmDelete = () => {
     confirmAlert({
       title: 'Confirmation',
-      message: 'Êtes-vous sûr de vouloir supprimer ce cadeau ? Cette action est irréversible.',
+      message: 'Are you sure you want to delete this gift? This action cannot be undone.',
       buttons: [
         {
-          label: 'Oui, supprimer',
+          label: 'Yes, delete',
           onClick: handleDelete
         },
         {
-          label: 'Annuler',
+          label: 'Cancel',
           onClick: () => {}
         }
       ]
@@ -54,17 +54,17 @@ const GiftListItem = ({
       if (response.data && response.data.success) {
         fetchGifts();
       } else {
-        alert('Erreur lors de la suppression du cadeau');
+        alert('Error deleting gift');
       }
     } catch (err) {
-      console.error('Erreur lors de la suppression du cadeau:', err);
-      alert(err.message || 'Une erreur est survenue');
+      console.error('Error deleting gift:', err);
+      alert(err.message || 'An error occurred');
     }
   };
 
   const handleQuickAssign = async () => {
     if (!guestId) {
-      alert('Vous devez être connecté pour réserver un cadeau');
+      alert('You must be logged in to reserve a gift');
       return;
     }
 
@@ -78,11 +78,11 @@ const GiftListItem = ({
       if (response.data && response.data.success) {
         fetchGifts();
       } else {
-        alert('Erreur lors de la réservation du cadeau');
+        alert('Error reserving gift');
       }
     } catch (err) {
-      console.error('Erreur lors de la réservation du cadeau:', err);
-      alert(err.message || 'Une erreur est survenue');
+      console.error('Error reserving gift:', err);
+      alert(err.message || 'An error occurred');
     }
   };
 
@@ -92,11 +92,11 @@ const GiftListItem = ({
       if (response.data && response.data.success) {
         fetchGifts();
       } else {
-        alert('Erreur lors de l\'annulation de la réservation');
+        alert('Error canceling reservation');
       }
     } catch (err) {
-      console.error('Erreur lors de l\'annulation de la réservation:', err);
-      alert(err.message || 'Une erreur est survenue');
+      console.error('Error canceling reservation:', err);
+      alert(err.message || 'An error occurred');
     }
   };
 
@@ -115,20 +115,20 @@ const GiftListItem = ({
             </div>
           )}
           <div className={`gift-status-badge status-${status}`}>
-            {status === 'available' && 'Disponible'}
-            {status === 'partially' && 'Partiellement réservé'}
-            {status === 'reserved' && 'Réservé'}
+            {status === 'available' && 'Available'}
+            {status === 'partially' && 'Partially Reserved'}
+            {status === 'reserved' && 'Reserved'}
             {isReservedByCurrentGuest && <FontAwesomeIcon icon={faCheck} style={{ marginLeft: '5px' }} />}
           </div>
         </div>
         <div className="gift-card-content">
           <h3>
-            {isEssential && <span className="essential-tag">ESSENTIEL</span>}
+            {isEssential && <span className="essential-tag">ESSENTIAL</span>}
             {name}
           </h3>
           <p className="gift-description">{description}</p>
           <div className="gift-quantity">
-            <span className="gift-quantity-label">Quantité:</span>
+            <span className="gift-quantity-label">Quantity:</span>
             <div className="gift-quantity-progress">
               <div 
                 className="gift-quantity-bar" 
@@ -140,35 +140,35 @@ const GiftListItem = ({
           <div className="gift-card-actions">
             {isOrganizer ? (
               <>
-                <Link to={`/events/${eventId}/gifts/${giftId}`} className="view-button">Voir</Link>
-                <Link to={`/events/${eventId}/gifts/${giftId}/edit`} className="edit-button">Modifier</Link>
-                <button onClick={confirmDelete} className="delete-button">Supprimer</button>
+                <Link to={`/events/${eventId}/gifts/${giftId}`} className="view-button">View</Link>
+                <Link to={`/events/${eventId}/gifts/${giftId}/edit`} className="edit-button">Edit</Link>
+                <button onClick={confirmDelete} className="delete-button">Delete</button>
               </>
             ) : isPublic ? (
               isReserved ? (
                 <button className="reserve-button" disabled style={{ opacity: 0.5 }}>
-                  Déjà réservé
+                  Already Reserved
                 </button>
               ) : isReservedByCurrentGuest ? (
                 <button className="unreserve-button" onClick={() => onAssign(gift)}>
-                  Modifier ma réservation
+                  Modify My Reservation
                 </button>
               ) : (
                 <button className="reserve-button" onClick={() => onAssign(gift)}>
-                  Je l'apporte
+                  I'll Bring It
                 </button>
               )
             ) : (
               <>
-                <Link to={`/events/${eventId}/gifts/${giftId}`} className="view-button">Voir</Link>
+                <Link to={`/events/${eventId}/gifts/${giftId}`} className="view-button">View</Link>
                 {!isReserved && !isReservedByCurrentGuest && (
                   <button className="reserve-button" onClick={quantity === 1 ? handleQuickAssign : () => onAssign(gift)}>
-                    Réserver
+                    Reserve
                   </button>
                 )}
                 {isReservedByCurrentGuest && (
                   <button className="unreserve-button" onClick={() => onAssign(gift)}>
-                    Modifier
+                    Modify
                   </button>
                 )}
               </>
@@ -196,7 +196,7 @@ const GiftListItem = ({
           </div>
         </td>
         <td>
-          {isEssential && <span className="essential-tag">ESSENTIEL</span>}
+          {isEssential && <span className="essential-tag">ESSENTIAL</span>}
           <span className="gift-name">{name}</span>
         </td>
         <td>
@@ -207,9 +207,9 @@ const GiftListItem = ({
         </td>
         <td>
           <span className={`status-badge status-badge-${status}`}>
-            {status === 'available' && 'Disponible'}
-            {status === 'partially' && 'Partiel'}
-            {status === 'reserved' && 'Réservé'}
+            {status === 'available' && 'Available'}
+            {status === 'partially' && 'Partial'}
+            {status === 'reserved' && 'Reserved'}
           </span>
         </td>
         <td>
@@ -226,7 +226,7 @@ const GiftListItem = ({
             ) : (
               <>
                 <Link to={`/events/${eventId}/gifts/${giftId}`} className="action-button view-button">
-                  Voir
+                  View
                 </Link>
                 {!gift.isReserved && (
                   <button 
@@ -234,7 +234,7 @@ const GiftListItem = ({
                     onClick={handleQuickAssign}
                     disabled={status === 'reserved'}
                   >
-                    Réserver
+                    Reserve
                   </button>
                 )}
               </>
@@ -260,7 +260,7 @@ const GiftListItem = ({
           )}
           {isReservedByCurrentGuest && (
             <div className="gift-status-badge status-available">
-              Vous l'apportez <FontAwesomeIcon icon={faCheck} />
+              You're bringing this <FontAwesomeIcon icon={faCheck} />
             </div>
           )}
         </div>
@@ -278,7 +278,7 @@ const GiftListItem = ({
           <div className="gift-public-actions">
             {isReserved && !isReservedByCurrentGuest ? (
               <button className="gift-public-button" disabled style={{ backgroundColor: '#e0e0e0', color: '#666' }}>
-                Déjà réservé
+                Already Reserved
               </button>
             ) : isReservedByCurrentGuest ? (
               <button 
@@ -286,7 +286,7 @@ const GiftListItem = ({
                 onClick={() => onAssign(gift)}
                 style={{ backgroundColor: '#f44336', color: 'white' }}
               >
-                Modifier
+                Modify
               </button>
             ) : (
               <button 
@@ -294,7 +294,7 @@ const GiftListItem = ({
                 onClick={() => onAssign(gift)}
                 style={{ backgroundColor: '#4caf50', color: 'white' }}
               >
-                Je l'apporte
+                I'll Bring It
               </button>
             )}
           </div>

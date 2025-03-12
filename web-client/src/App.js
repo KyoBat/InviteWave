@@ -39,6 +39,7 @@ import GiftManagement from './components/gifts/GiftManagement';
 import './styles/main.css';
 import './styles/gifts.css';
 
+
 function App() {
   return (
     <Router>
@@ -56,7 +57,6 @@ function App() {
             <Route element={<PrivateRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<ProfileSettings />} />
-              
               
               {/* Events routes */}
               <Route path="/events" element={<EventList />} />
@@ -77,11 +77,9 @@ function App() {
               
               {/* Gifts routes */}
               <Route path="/events/:eventId/gifts" element={<GiftManagement />} />
-              <Route path="/dashboard/events/:eventId/gifts" element={<GiftManagement />} />
               <Route path="/events/:eventId/gifts/create" element={<GiftForm />} />
               <Route path="/events/:eventId/gifts/:giftId" element={<GiftDetail isOrganizer={true} />} />
               <Route path="/events/:eventId/gifts/:giftId/edit" element={<GiftForm />} />
-              
             </Route>
 
             {/* Redirect root to dashboard or login */}
@@ -100,6 +98,5 @@ function App() {
       </AuthProvider>
     </Router>
   );
-}
-
+};
 export default App;

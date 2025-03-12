@@ -1,18 +1,26 @@
 // web-client/src/components/gifts/GiftManagement.js
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { getAllGifts, reorderGifts } from '../../services/gift';
 import GiftList from './GiftList';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGripLines, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faGripLines, faSave, faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 
-const GiftManagement = ({ 
-  guestId, 
-  isOrganizer = true,
-  enableReordering = true 
-}) => {
-  const { eventId } = useParams();
+const generateReorderedGifts = (gifts) => {
+  return gifts.map((gift, index) => ({
+    id: gift._id,
+    order: gift.order || index + 1,
+    name: gift.name,
+    isEssential: gift.isEssential,
+    status: gift.status,
+  }));
+};
+
+const GiftManagement = ({ eventId, guestId, isOrganizer = true, enableReordering = true }) => {
+  const params = useParams();
+  const effectiveEventId = eventId || params.eventId;
+  
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,180 +28,150 @@ const GiftManagement = ({
   const [reorderedGifts, setReorderedGifts] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    fetchGifts();
-  }, [eventId]);
-
   const fetchGifts = async () => {
+    if (!effectiveEventId) {
+      setError("Missing event ID");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const params = {};
-      if (guestId) {
-        params.guestId = guestId;
-      }
-      
-      const response = await getAllGifts(eventId, params);
-      if (response.data && response.data.success) {
+      const params = guestId ? { guestId } : {};
+      const response = await getAllGifts(effectiveEventId, params);
+      if (response.data?.success) {
         setGifts(response.data.data);
-        // Initialiser la liste pour le réordonnement
-        setReorderedGifts(response.data.data.map((gift, index) => ({
-          id: gift._id,
-          order: gift.order || index + 1,
-          name: gift.name,
-          isEssential: gift.isEssential,
-          status: gift.status
-        })));
+        setReorderedGifts(generateReorderedGifts(response.data.data));
       } else {
-        setError('Erreur lors de la récupération des cadeaux');
+        setError("Error retrieving gifts");
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la récupération des cadeaux:', err);
+      setError(err.message || "An error occurred");
+      console.error("Error retrieving gifts:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (effectiveEventId) {
+      fetchGifts();
+    } else {
+      setError("Missing event ID");
+      setLoading(false);
+    }
+  }, [effectiveEventId, guestId]);
+
   const handleDragEnd = (result) => {
-    // Abandonner si abandonné en dehors de la zone
-    if (!result.destination) return;
-    
-    // Abandonner si la position n'a pas changé
-    if (result.destination.index === result.source.index) return;
-    
-    // Réorganiser la liste
-    const items = Array.from(reorderedGifts);
+    if (!result.destination || result.destination.index === result.source.index) return;
+
+    const items = [...reorderedGifts];
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-    
-    // Mettre à jour les indices
-    const updatedItems = items.map((item, index) => ({
-      ...item,
-      order: index + 1
-    }));
-    
-    setReorderedGifts(updatedItems);
+    setReorderedGifts(items.map((item, index) => ({ ...item, order: index + 1 })));
   };
 
   const saveReordering = async () => {
     setIsSaving(true);
     try {
-      const items = reorderedGifts.map(gift => ({
-        id: gift.id,
-        order: gift.order
-      }));
-      
-      const response = await reorderGifts(eventId, items);
-      if (response.data && response.data.success) {
+      const response = await reorderGifts(effectiveEventId, reorderedGifts.map(gift => ({ id: gift.id, order: gift.order })));
+      if (response.data?.success) {
         setIsReorderMode(false);
         fetchGifts();
       } else {
-        setError('Erreur lors de la sauvegarde de l\'ordre');
+        setError("Error saving order");
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la sauvegarde de l\'ordre:', err);
+      setError(err.message || "An error occurred");
+      console.error("Error saving order:", err);
     } finally {
       setIsSaving(false);
     }
   };
 
   const cancelReordering = () => {
-    // Réinitialiser les changements
-    setReorderedGifts(gifts.map((gift, index) => ({
-      id: gift._id,
-      order: gift.order || index + 1,
-      name: gift.name,
-      isEssential: gift.isEssential,
-      status: gift.status
-    })));
+    setReorderedGifts(generateReorderedGifts(gifts));
     setIsReorderMode(false);
   };
 
-  if (loading && !isReorderMode) return <div className="loading">Chargement...</div>;
-  if (error) return <div className="error-message">Erreur: {error}</div>;
+  if (loading && !isReorderMode) return <div className="loading">Loading...</div>;
 
   return (
     <div className="gift-management-container">
-      {isOrganizer && enableReordering && (
-        <div className="reordering-controls">
-          {isReorderMode ? (
-            <div className="reordering-actions">
-              <button 
-                className="save-button"
-                onClick={saveReordering}
-                disabled={isSaving}
-              >
-                <FontAwesomeIcon icon={faSave} /> {isSaving ? 'Sauvegarde...' : 'Enregistrer l\'ordre'}
-              </button>
-              <button 
-                className="cancel-button"
-                onClick={cancelReordering}
-                disabled={isSaving}
-              >
-                <FontAwesomeIcon icon={faTimes} /> Annuler
-              </button>
+      <div className="gift-management-header">
+        {isOrganizer && (
+          <div className="gift-management-actions">
+            <Link 
+              to={`/events/${effectiveEventId}/gifts/create`} 
+              className="create-gift-button"
+            >
+              <FontAwesomeIcon icon={faPlus} /> Create Gift
+            </Link>
+            
+            {enableReordering && (
+              isReorderMode ? (
+                <div className="reordering-actions">
+                  <button className="save-button" onClick={saveReordering} disabled={isSaving}>
+                    <FontAwesomeIcon icon={faSave} /> {isSaving ? 'Saving...' : 'Save Order'}
+                  </button>
+                  <button className="cancel-button" onClick={cancelReordering} disabled={isSaving}>
+                    <FontAwesomeIcon icon={faTimes} /> Cancel
+                  </button>
+                </div>
+              ) : (
+                <button className="reorder-button" onClick={() => setIsReorderMode(true)}>
+                  Reorder Gifts
+                </button>
+              )
+            )}
+          </div>
+        )}
+      </div>
+
+      {error && <div className="error-message">Error: {error}</div>}
+
+      {isReorderMode ? (
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="gifts">
+            {(provided) => (
+              <ul className="reorder-list" {...provided.droppableProps} ref={provided.innerRef}>
+                {reorderedGifts.map((gift, index) => (
+                  <Draggable key={gift.id} draggableId={gift.id} index={index}>
+                    {(provided) => (
+                      <li className="reorder-item" ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                        <div className="reorder-grip"><FontAwesomeIcon icon={faGripLines} /></div>
+                        <div className="reorder-content">
+                          <span className="reorder-name">
+                            {gift.isEssential && <span className="essential-tag">ESSENTIAL</span>}
+                            {gift.name}
+                          </span>
+                          <span className={`reorder-status status-${gift.status}`}>
+                            {gift.status === 'available' ? 'Available' : gift.status === 'partially' ? 'Partial' : 'Reserved'}
+                          </span>
+                        </div>
+                      </li>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </ul>
+            )}
+          </Droppable>
+        </DragDropContext>
+      ) : (
+        <div className="gift-list-wrapper">
+          {gifts.length === 0 && !loading ? (
+            <div className="no-gifts-message">
+              <p>No gifts found. {isOrganizer && 'Create your first gift using the button above!'}</p>
             </div>
           ) : (
-            <button 
-              className="reorder-button"
-              onClick={() => setIsReorderMode(true)}
-            >
-              Réorganiser les cadeaux
-            </button>
+            <GiftList 
+              providedEventId={effectiveEventId} 
+              guestId={guestId} 
+              isOrganizer={isOrganizer} 
+            />
           )}
         </div>
-      )}
-      
-      {isReorderMode ? (
-        <div className="reorder-container">
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="gifts">
-              {(provided) => (
-                <ul
-                  className="reorder-list"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {reorderedGifts.map((gift, index) => (
-                    <Draggable key={gift.id} draggableId={gift.id} index={index}>
-                      {(provided) => (
-                        <li
-                          className="reorder-item"
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <div className="reorder-grip">
-                            <FontAwesomeIcon icon={faGripLines} />
-                          </div>
-                          <div className="reorder-content">
-                            <span className="reorder-name">
-                              {gift.isEssential && <span className="essential-tag">ESSENTIEL</span>}
-                              {gift.name}
-                            </span>
-                            <span className={`reorder-status status-${gift.status}`}>
-                              {gift.status === 'available' && 'Disponible'}
-                              {gift.status === 'partially' && 'Partiel'}
-                              {gift.status === 'reserved' && 'Réservé'}
-                            </span>
-                          </div>
-                        </li>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </ul>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </div>
-      ) : (
-        <GiftList 
-          eventId={eventId} 
-          guestId={guestId} 
-          isOrganizer={isOrganizer} 
-        />
       )}
     </div>
   );

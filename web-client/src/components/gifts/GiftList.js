@@ -1,58 +1,66 @@
 // web-client/src/components/gifts/GiftList.js
 import React, { useState, useEffect } from 'react';
-import { getAllGifts } from '../../services/gift';
+import { useParams } from 'react-router-dom';
+import { getGiftItems } from '../../services/gift';
 import GiftListItem from './GiftListItem';
 import GiftAssignmentModal from './GiftAssignmentModal';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faThLarge, faPlus, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faList, faThLarge, faPlus } from '@fortawesome/free-solid-svg-icons';
 
-const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) => {
+const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null, isPublic = false }) => {
+  const { eventId: urlEventId } = useParams();
+  const effectiveEventId = providedEventId || urlEventId;
+
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' ou 'list'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedGift, setSelectedGift] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [myReservations, setMyReservations] = useState([]);
 
-  useEffect(() => {
-    fetchGifts();
-  }, [eventId, guestId, statusFilter]);
-
+  // Define fetchGifts outside useEffect to reuse it
   const fetchGifts = async () => {
-    setLoading(true);
-    try {
-      const params = {};
-      if (statusFilter) params.status = statusFilter;
-      if (guestId) params.guestId = guestId;
+    if (!effectiveEventId) {
+      console.error('No event ID found');
+      setError('Missing event ID');
+      setLoading(false);
+      return;
+    }
 
-      const response = await getAllGifts(eventId, params);
-      if (response.data && response.data.success) {
-        setGifts(response.data.data);
-        
-        // Extraire les réservations de l'invité actuel
-        if (guestId) {
-          const reservations = response.data.data
-            .filter(gift => gift.isReservedByCurrentGuest)
-            .map(gift => ({
-              giftId: gift._id,
-              giftName: gift.name,
-              quantity: gift.currentGuestReservation ? gift.currentGuestReservation.quantity : 0
-            }));
-          setMyReservations(reservations);
-        }
-      } else {
-        setError('Erreur lors de la récupération des cadeaux');
+    try {
+      setLoading(true);
+      console.log('Fetching gifts for event:', effectiveEventId);
+      const response = await getGiftItems(effectiveEventId);
+      setGifts(response.data.data || []);
+
+      // Extract current guest's reservations
+      if (guestId) {
+        const reservations = response.data.data
+          .filter(gift => gift.isReservedByCurrentGuest)
+          .map(gift => ({
+            giftId: gift._id,
+            giftName: gift.name,
+            quantity: gift.currentGuestReservation ? gift.currentGuestReservation.quantity : 0,
+          }));
+        setMyReservations(reservations);
       }
+
+      setError(null);
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la récupération des cadeaux:', err);
+      console.error('Error retrieving gifts:', err);
+      setError('Error retrieving gifts');
     } finally {
       setLoading(false);
     }
   };
+
+  // Use fetchGifts in useEffect
+  useEffect(() => {
+    fetchGifts();
+  }, [effectiveEventId, guestId, statusFilter]);
 
   const handleAssign = (gift) => {
     setSelectedGift(gift);
@@ -61,17 +69,18 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
 
   const handleAssignmentComplete = () => {
     setShowAssignModal(false);
-    fetchGifts(); // Rafraîchir la liste après réservation
+    // Refresh list after reservation
+    fetchGifts();
   };
 
   const renderGiftGrid = () => {
     if (gifts.length === 0) {
       return (
         <div className="no-gifts">
-          <p>Aucun cadeau n'est disponible pour le moment.</p>
+          <p>No gifts are available at this time.</p>
           {isOrganizer && (
-            <Link to={`/events/${eventId}/gifts/create`} className="create-link">
-              Ajouter un cadeau
+            <Link to={`/events/${effectiveEventId}/gifts/create`} className="create-link">
+              Add a gift
             </Link>
           )}
         </div>
@@ -100,10 +109,10 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
     if (gifts.length === 0) {
       return (
         <div className="no-gifts">
-          <p>Aucun cadeau n'est disponible pour le moment.</p>
+          <p>No gifts are available at this time.</p>
           {isOrganizer && (
-            <Link to={`/events/${eventId}/gifts/create`} className="create-link">
-              Ajouter un cadeau
+            <Link to={`/events/${effectiveEventId}/gifts/create`} className="create-link">
+              Add a gift
             </Link>
           )}
         </div>
@@ -116,10 +125,10 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
           <thead>
             <tr>
               <th></th>
-              <th>Nom</th>
+              <th>Name</th>
               <th>Description</th>
-              <th>Quantité</th>
-              <th>Statut</th>
+              <th>Quantity</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -147,15 +156,15 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
 
     return (
       <div className="my-reservations">
-        <h3>Mes réservations</h3>
+        <h3>My Reservations</h3>
         {myReservations.length === 0 ? (
-          <p className="no-reservations-message">Vous n'avez pas encore réservé de cadeau.</p>
+          <p className="no-reservations-message">You haven't reserved any gifts yet.</p>
         ) : (
           <ul className="my-reservations-list">
             {myReservations.map(reservation => (
               <li key={reservation.giftId} className="my-reservation-item">
                 <span className="item-name">{reservation.giftName}</span>
-                <span className="item-quantity">Quantité: {reservation.quantity}</span>
+                <span className="item-quantity">Quantity: {reservation.quantity}</span>
                 <span 
                   className="unreserve-link"
                   onClick={() => {
@@ -163,7 +172,7 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
                     if (gift) handleAssign(gift);
                   }}
                 >
-                  Modifier
+                  Modify
                 </span>
               </li>
             ))}
@@ -173,17 +182,17 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
     );
   };
 
-  if (loading) return <div className="loading">Chargement de la liste de cadeaux...</div>;
-  if (error) return <div className="error-message">Erreur: {error}</div>;
+  if (loading) return <div className="loading">Loading gift list...</div>;
+  if (error) return <div className="error-message">Error: {error}</div>;
 
   return (
     <div className="gift-list-container">
       {!isPublic && (
         <div className="gift-list-header">
-          <h2>Liste de cadeaux</h2>
+          <h2>Gift List</h2>
           {isOrganizer && (
-            <Link to={`/events/${eventId}/gifts/create`} className="create-button">
-              <FontAwesomeIcon icon={faPlus} />&nbsp;Ajouter un cadeau
+            <Link to={`/events/${effectiveEventId}/gifts/create`} className="create-button">
+              <FontAwesomeIcon icon={faPlus} />&nbsp;Add Gift
             </Link>
           )}
         </div>
@@ -195,12 +204,12 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
             className="filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            aria-label="Filtrer par statut"
+            aria-label="Filter by status"
           >
-            <option value="">Tous les cadeaux</option>
-            <option value="available">Disponibles</option>
-            <option value="partially">Partiellement réservés</option>
-            <option value="reserved">Entièrement réservés</option>
+            <option value="">All Gifts</option>
+            <option value="available">Available</option>
+            <option value="partially">Partially Reserved</option>
+            <option value="reserved">Fully Reserved</option>
           </select>
 
           {isOrganizer && (
@@ -208,14 +217,14 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
               <button
                 className={`view-toggle-button ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => setViewMode('grid')}
-                aria-label="Affichage en grille"
+                aria-label="Grid view"
               >
                 <FontAwesomeIcon icon={faThLarge} />
               </button>
               <button
                 className={`view-toggle-button ${viewMode === 'list' ? 'active' : ''}`}
                 onClick={() => setViewMode('list')}
-                aria-label="Affichage en liste"
+                aria-label="List view"
               >
                 <FontAwesomeIcon icon={faList} />
               </button>
@@ -226,10 +235,10 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
 
       {isPublic && (
         <div className="gift-public-header">
-          <h3>Liste de cadeaux</h3>
-          <p>Si vous souhaitez nous offrir un cadeau, voici quelques idées. Cliquez sur "Je l'apporte" pour réserver un cadeau.</p>
+          <h3>Gift List</h3>
+          <p>If you'd like to give us a gift, here are some ideas. Click "I'll bring it" to reserve an item.</p>
           <div className="gift-list-instructions">
-            <p>Les éléments grisés sont déjà réservés par d'autres invités.</p>
+            <p>Greyed out items are already reserved by other guests.</p>
           </div>
         </div>
       )}
@@ -260,7 +269,7 @@ const GiftList = ({ eventId, guestId, isOrganizer = false, isPublic = false }) =
       {showAssignModal && selectedGift && (
         <GiftAssignmentModal
           gift={selectedGift}
-          eventId={eventId}
+          eventId={effectiveEventId}
           guestId={guestId}
           onClose={() => setShowAssignModal(false)}
           onComplete={handleAssignmentComplete}

@@ -1,4 +1,4 @@
-// web-client/src/components/gifts/GiftDetail.js
+// src/components/gifts/GiftDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getGiftById, assignGift, unassignGift, deleteGift } from '../../services/gift';
@@ -42,11 +42,11 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
       if (response.data && response.data.success) {
         setGift(response.data.data);
       } else {
-        setError('Erreur lors de la récupération des données du cadeau');
+        setError('Error retrieving gift data');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la récupération des données du cadeau:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error retrieving gift data:', err);
     } finally {
       setLoading(false);
     }
@@ -55,26 +55,26 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
   const handleDelete = async () => {
     confirmAlert({
       title: 'Confirmation',
-      message: 'Êtes-vous sûr de vouloir supprimer ce cadeau ? Cette action est irréversible.',
+      message: 'Are you sure you want to delete this gift? This action cannot be undone.',
       buttons: [
         {
-          label: 'Oui, supprimer',
+          label: 'Yes, delete',
           onClick: async () => {
             try {
               const response = await deleteGift(eventId, giftId);
               if (response.data && response.data.success) {
                 navigate(`/events/${eventId}/gifts`);
               } else {
-                setError('Erreur lors de la suppression du cadeau');
+                setError('Error deleting gift');
               }
             } catch (err) {
-              setError(err.message || 'Une erreur est survenue');
-              console.error('Erreur lors de la suppression du cadeau:', err);
+              setError(err.message || 'An error occurred');
+              console.error('Error deleting gift:', err);
             }
           }
         },
         {
-          label: 'Annuler',
+          label: 'Cancel',
           onClick: () => {}
         }
       ]
@@ -83,7 +83,7 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
 
   const handleQuickAssign = async () => {
     if (!guestId) {
-      alert('Vous devez être connecté pour réserver un cadeau');
+      alert('You must be logged in to reserve a gift');
       return;
     }
 
@@ -97,11 +97,11 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
       if (response.data && response.data.success) {
         fetchGiftData();
       } else {
-        setError('Erreur lors de la réservation du cadeau');
+        setError('Error reserving gift');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la réservation du cadeau:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error reserving gift:', err);
     }
   };
 
@@ -115,11 +115,11 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
       if (response.data && response.data.success) {
         fetchGiftData();
       } else {
-        setError('Erreur lors de l\'annulation de la réservation');
+        setError('Error canceling reservation');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de l\'annulation de la réservation:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error canceling reservation:', err);
     }
   };
 
@@ -128,9 +128,9 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
     fetchGiftData();
   };
 
-  if (loading) return <div className="loading">Chargement...</div>;
-  if (error) return <div className="error-message">Erreur: {error}</div>;
-  if (!gift) return <div className="not-found">Cadeau non trouvé</div>;
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error-message">Error: {error}</div>;
+  if (!gift) return <div className="not-found">Gift not found</div>;
 
   const {
     name,
@@ -157,22 +157,22 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
     <div className="gift-detail-container">
       <div className="gift-detail-header">
         <h2>
-          {isEssential && <span className="essential-tag">ESSENTIEL</span>}
+          {isEssential && <span className="essential-tag">ESSENTIAL</span>}
           {name}
         </h2>
         
         <div className="gift-actions">
           <Link to={`/events/${eventId}/gifts`} className="back-button">
-            <FontAwesomeIcon icon={faArrowLeft} /> Retour à la liste
+            <FontAwesomeIcon icon={faArrowLeft} /> Back to list
           </Link>
           
           {isOrganizer && (
             <>
               <Link to={`/events/${eventId}/gifts/${giftId}/edit`} className="edit-button">
-                <FontAwesomeIcon icon={faEdit} /> Modifier
+                <FontAwesomeIcon icon={faEdit} /> Edit
               </Link>
               <button onClick={handleDelete} className="delete-button">
-                <FontAwesomeIcon icon={faTrash} /> Supprimer
+                <FontAwesomeIcon icon={faTrash} /> Delete
               </button>
             </>
           )}
@@ -195,11 +195,11 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
           
           <div className="gift-info">
             <h3>Description</h3>
-            <p>{description || 'Aucune description disponible.'}</p>
+            <p>{description || 'No description available.'}</p>
           </div>
           
           <div className="gift-quantity-detail">
-            <h4>Progression des réservations</h4>
+            <h4>Reservation Progress</h4>
             <div className="quantity-progress">
               <div 
                 className="quantity-progress-bar" 
@@ -207,22 +207,22 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
               ></div>
             </div>
             <div className="quantity-text">
-              <span>{quantityReserved} réservé(s) sur {quantity} souhaité(s)</span>
-              <span>{availableQuantity} disponible(s)</span>
+              <span>{quantityReserved} reserved out of {quantity} needed</span>
+              <span>{availableQuantity} available</span>
             </div>
           </div>
           
           {(isOrganizer || reservations.length > 0) && (
             <div className="reserved-by">
-              <h3>Réservé par :</h3>
+              <h3>Reserved by:</h3>
               {reservations.length === 0 ? (
-                <p className="no-reservations">Aucune réservation pour le moment</p>
+                <p className="no-reservations">No reservations yet</p>
               ) : (
                 <table className="reservations-table">
                   <thead>
                     <tr>
-                      <th>Invité</th>
-                      <th>Quantité</th>
+                      <th>Guest</th>
+                      <th>Quantity</th>
                       <th>Message</th>
                       <th>Date</th>
                     </tr>
@@ -234,10 +234,10 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                           {isOrganizer && reservation.guestId ? (
                             reservation.guestId.name
                           ) : (
-                            reservation.guestName || 'Un invité'
+                            reservation.guestName || 'A guest'
                           )}
                           {reservation.guestId && guestId && reservation.guestId._id === guestId && (
-                            <span style={{ marginLeft: '5px', color: '#5c6bc0' }}>(Vous)</span>
+                            <span style={{ marginLeft: '5px', color: '#5c6bc0' }}>(You)</span>
                           )}
                         </td>
                         <td>{reservation.quantity}</td>
@@ -245,14 +245,14 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                           {reservation.message ? (
                             <span className="reservation-message">{reservation.message}</span>
                           ) : (
-                            <em>Aucun message</em>
+                            <em>No message</em>
                           )}
                         </td>
                         <td>
                           {reservation.createdAt ? (
                             formatDate(reservation.createdAt)
                           ) : (
-                            <em>Date inconnue</em>
+                            <em>Unknown date</em>
                           )}
                         </td>
                       </tr>
@@ -266,35 +266,35 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
         
         <div className="gift-detail-sidebar">
           <div className="action-panel">
-            <h3>Informations</h3>
+            <h3>Information</h3>
             <div className="gift-status-info">
               <p>
-                <strong>Statut :</strong> 
+                <strong>Status:</strong> 
                 <span className={`status-${status}`}>
-                  {status === 'available' && 'Disponible'}
-                  {status === 'partially' && 'Partiellement réservé'}
-                  {status === 'reserved' && 'Entièrement réservé'}
+                  {status === 'available' && 'Available'}
+                  {status === 'partially' && 'Partially Reserved'}
+                  {status === 'reserved' && 'Fully Reserved'}
                 </span>
               </p>
               <p>
-                <strong>Quantité :</strong> {quantity}
+                <strong>Quantity:</strong> {quantity}
               </p>
               <p>
-                <strong>Réservé :</strong> {quantityReserved}
+                <strong>Reserved:</strong> {quantityReserved}
               </p>
               <p>
-                <strong>Disponible :</strong> {availableQuantity}
+                <strong>Available:</strong> {availableQuantity}
               </p>
               <p>
-                <strong>Essentiel :</strong> {isEssential ? 'Oui' : 'Non'}
+                <strong>Essential:</strong> {isEssential ? 'Yes' : 'No'}
               </p>
               {isOrganizer && (
                 <>
                   <p>
-                    <strong>Créé le :</strong> {formatDate(createdAt)}
+                    <strong>Created:</strong> {formatDate(createdAt)}
                   </p>
                   <p>
-                    <strong>Dernière modification :</strong> {formatDate(updatedAt)}
+                    <strong>Last updated:</strong> {formatDate(updatedAt)}
                   </p>
                 </>
               )}
@@ -303,26 +303,26 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
           
           {!isOrganizer && guestId && (
             <div className="action-panel">
-              <h3>Réservation</h3>
+              <h3>Reservation</h3>
               {isReserved && !isReservedByCurrentGuest ? (
                 <div className="unavailable-message">
                   <FontAwesomeIcon icon={faTimesCircle} size="2x" style={{ color: '#f44336' }} />
-                  <p>Ce cadeau est déjà entièrement réservé.</p>
+                  <p>This gift is already fully reserved.</p>
                 </div>
               ) : isReservedByCurrentGuest ? (
                 <div className="reserve-form">
                   <p>
                     <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#4caf50', marginRight: '8px' }} />
-                    Vous avez réservé ce cadeau.
+                    You have reserved this gift.
                   </p>
                   {currentGuestReservation && (
-                    <p>Quantité : {currentGuestReservation.quantity}</p>
+                    <p>Quantity: {currentGuestReservation.quantity}</p>
                   )}
                   <button 
                     className="full-width-button unreserve-button-large"
                     onClick={() => setShowAssignModal(true)}
                   >
-                    Modifier ma réservation
+                    Modify my reservation
                   </button>
                 </div>
               ) : (
@@ -332,14 +332,14 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                       className="full-width-button reserve-button-large"
                       onClick={handleQuickAssign}
                     >
-                      Je l'apporte
+                      I'll bring it
                     </button>
                   ) : (
                     <button 
                       className="full-width-button reserve-button-large"
                       onClick={() => setShowAssignModal(true)}
                     >
-                      Je l'apporte
+                      I'll bring it
                     </button>
                   )}
                 </div>

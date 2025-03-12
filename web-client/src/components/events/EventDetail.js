@@ -5,9 +5,6 @@ import { format } from 'date-fns';
 import { eventService } from '../../services';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import GiftList from '../gifts/GiftList';
-
-// Nouvel import pour le composant de gestion des cadeaux
 import GiftManagement from '../gifts/GiftManagement';
 
 const EventDetail = () => {
@@ -64,8 +61,8 @@ const EventDetail = () => {
   const formattedDate = format(eventDate, 'EEEE, MMMM d, yyyy');
   const formattedTime = format(eventDate, 'h:mm a');
   
-  // On assume que l'organisateur est l'utilisateur courant (à adapter selon votre logique d'application)
-  const isOrganizer = true; // Cette valeur devrait être déterminée par votre logique d'application
+  // Assume organizer is current user (adapt according to your application logic)
+  const isOrganizer = true;
   
   return (
     <div className="event-detail-container">
@@ -87,14 +84,13 @@ const EventDetail = () => {
       
       <Tabs>
         <TabList>
-          <Tab>Détails</Tab>
-          <Tab>Invités</Tab>
+          <Tab>Details</Tab>
+          <Tab>Guests</Tab>
           <Tab>Invitations</Tab>
-          <Tab>Cadeaux</Tab> {/* Nouvel onglet */}
+          <Tab>Gifts</Tab>
         </TabList>
         
         <TabPanel>
-          {/* Contenu de l'onglet Détails */}
           <div className="event-detail-content">
             <div className="event-detail-main">
               <div className="event-cover">
@@ -129,7 +125,6 @@ const EventDetail = () => {
                   <div>
                     <strong>Location</strong>
                     <p>{event.location.address}</p>
-                    
                   </div>
                 </div>
                 
@@ -186,30 +181,25 @@ const EventDetail = () => {
         </TabPanel>
         
         <TabPanel>
-          {/* Contenu de l'onglet Invités */}
           <div className="guests-tab-content">
-            <p>Contenu de l'onglet Invités à implémenter</p>
+            <p>Guest tab content to be implemented</p>
           </div>
         </TabPanel>
         
         <TabPanel>
-          {/* Contenu de l'onglet Invitations */}
           <div className="invitations-tab-content">
-            <p>Contenu de l'onglet Invitations à implémenter</p>
+            <p>Invitations tab content to be implemented</p>
           </div>
         </TabPanel>
         
         <TabPanel>
-          {         <div className="event-detail-section">
-  <h2>Liste de cadeaux/objets</h2>
-
-</div>}
-          <GiftManagement isOrganizer={isOrganizer} enableReordering={isOrganizer} />
- 
+          <div className="event-detail-section">
+            <h2>Gift List</h2>
+          </div>
+          <GiftManagement isOrganizer={isOrganizer} enableReordering={isOrganizer} eventId={id} />
         </TabPanel>
       </Tabs>
       
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -230,7 +220,6 @@ const EventDetail = () => {
               </button>
             </div>
           </div>
-          
         </div>
       )}
     </div>
@@ -238,4 +227,3 @@ const EventDetail = () => {
 };
 
 export default EventDetail;
-

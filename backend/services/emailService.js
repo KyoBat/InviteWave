@@ -14,6 +14,31 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
+ * Send email using Nodemailer
+ * @param {string} to - Recipient's email
+ * @param {string} subject - Email subject
+ * @param {string} html - HTML content
+ * @param {string} text - Plain text content
+ * @returns {Promise<Object>} - Nodemailer response
+ */
+const sendEmail = async (to, subject, html, text = null) => {
+  try {
+    const mailOptions = {
+      from: `"Event Planner" <${config.email.from}>`,
+      to,
+      subject,
+      html,
+      text: text || html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+    };
+
+    return await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Email Service Error:', error);
+    throw new Error(`Failed to send email: ${error.message}`);
+  }
+};
+
+/**
  * Send invitation via email
  * @param {string} email - Recipient's email address
  * @param {string} guestName - Guest's name
@@ -119,16 +144,15 @@ exports.sendEmailInvitation = async (email, guestName, event, message, invitatio
       </html>
     `;
 
-    // Send email
-    const info = await transporter.sendMail({
-      from: `"Event Planner" <${config.email.from}>`,
-      to: email,
-      subject: `You're Invited to ${event.name}!`,
-      html: htmlContent,
-      text: `Hello ${guestName},\n\n${message || `You're invited to ${event.name}!`}\n\nEvent: ${event.name}\nDate: ${formattedDate}\nTime: ${formattedTime}\nLocation: ${event.location.address}\n\nPlease respond at: ${invitationUrl}\n\nWe hope to see you there!`
-    });
+    const textContent = `Hello ${guestName},\n\n${message || `You're invited to ${event.name}!`}\n\nEvent: ${event.name}\nDate: ${formattedDate}\nTime: ${formattedTime}\nLocation: ${event.location.address}\n\nPlease respond at: ${invitationUrl}\n\nWe hope to see you there!`;
 
-    return info;
+    // Send email
+    return await sendEmail(
+      email,
+      `You're Invited to ${event.name}!`,
+      htmlContent,
+      textContent
+    );
   } catch (error) {
     console.error('Email Service Error:', error);
     throw new Error(`Failed to send email: ${error.message}`);
@@ -211,49 +235,48 @@ exports.sendResetPasswordEmail = async (email, resetToken) => {
       </html>
     `;
 
-    // Send email
-    const info = await transporter.sendMail({
-      from: `"Event Planner" <${config.email.from}>`,
-      to: email,
-      subject: 'Reset Your Password - Event Planner App',
-      html: htmlContent,
-      text: `Hello,\n\nWe received a request to reset your password for the Event Planner App. Please visit the following link to set a new password:\n\n${resetUrl}\n\nIf you didn't request this, you can safely ignore this email.\n\nThis link will expire in 1 hour for security reasons.`
-    });
+    const textContent = `Hello,\n\nWe received a request to reset your password for the Event Planner App. Please visit the following link to set a new password:\n\n${resetUrl}\n\nIf you didn't request this, you can safely ignore this email.\n\nThis link will expire in 1 hour for security reasons.`;
 
-    return info;
+    // Send email
+    return await sendEmail(
+      email,
+      'Reset Your Password - Event Planner App',
+      htmlContent,
+      textContent
+    );
   } catch (error) {
     console.error('Email Service Error:', error);
     throw new Error(`Failed to send password reset email: ${error.message}`);
   }
 };
 
-
 /**
- * Envoie une notification à l'organisateur lorsqu'un invité réserve un cadeau
- * @param {string} to - Email de l'organisateur
- * @param {Object} data - Données pour le template d'email
- * @param {string} data.eventName - Nom de l'événement
- * @param {string} data.guestName - Nom de l'invité qui a réservé
- * @param {string} data.giftName - Nom du cadeau réservé
- * @param {number} data.quantity - Quantité réservée
- * @param {string} data.message - Message de l'invité (optionnel)
+ * Send notification to the organizer when a guest reserves a gift
+ * @param {string} to - Organizer's email
+ * @param {Object} data - Data for the email template
+ * @param {string} data.eventName - Event name
+ * @param {string} data.guestName - Name of the guest who reserved
+ * @param {string} data.giftName - Name of the reserved gift
+ * @param {number} data.quantity - Reserved quantity
+ * @param {string} data.message - Guest's message (optional)
+ * @returns {Promise<Object>} - Nodemailer response
  */
 exports.sendGiftReservationNotification = async (to, data) => {
-  const subject = `[${data.eventName}] Nouvelle réservation de cadeau`;
+  const subject = `[${data.eventName}] New Gift Reservation`;
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Nouvelle réservation de cadeau</h2>
-      <p>Bonjour,</p>
-      <p>Un invité a réservé un élément de votre liste de cadeaux pour ${data.eventName}.</p>
+      <h2>New Gift Reservation</h2>
+      <p>Hello,</p>
+      <p>A guest has reserved an item from your gift list for ${data.eventName}.</p>
       <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <p><strong>Invité:</strong> ${data.guestName}</p>
-        <p><strong>Cadeau:</strong> ${data.giftName}</p>
-        <p><strong>Quantité:</strong> ${data.quantity}</p>
-        ${data.message !== 'Aucun message' ? `<p><strong>Message:</strong> ${data.message}</p>` : ''}
+        <p><strong>Guest:</strong> ${data.guestName}</p>
+        <p><strong>Gift:</strong> ${data.giftName}</p>
+        <p><strong>Quantity:</strong> ${data.quantity}</p>
+        ${data.message !== 'No message' ? `<p><strong>Message:</strong> ${data.message}</p>` : ''}
       </div>
-      <p>Vous pouvez consulter votre liste de cadeaux sur la page de détail de votre événement.</p>
-      <p>Cordialement,<br>L'équipe InviteWave</p>
+      <p>You can view your gift list on your event details page.</p>
+      <p>Best regards,<br>The Event Planner Team</p>
     </div>
   `;
   
@@ -261,30 +284,34 @@ exports.sendGiftReservationNotification = async (to, data) => {
 };
 
 /**
- * Envoie une notification à l'organisateur lorsqu'un invité annule sa réservation
- * @param {string} to - Email de l'organisateur
- * @param {Object} data - Données pour le template d'email
- * @param {string} data.eventName - Nom de l'événement
- * @param {string} data.guestName - Nom de l'invité qui a annulé
- * @param {string} data.giftName - Nom du cadeau concerné
+ * Send notification to the organizer when a guest cancels a reservation
+ * @param {string} to - Organizer's email
+ * @param {Object} data - Data for the email template
+ * @param {string} data.eventName - Event name
+ * @param {string} data.guestName - Name of the guest who canceled
+ * @param {string} data.giftName - Name of the gift
+ * @returns {Promise<Object>} - Nodemailer response
  */
 exports.sendGiftCancellationNotification = async (to, data) => {
-  const subject = `[${data.eventName}] Annulation d'une réservation de cadeau`;
+  const subject = `[${data.eventName}] Gift Reservation Canceled`;
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Annulation d'une réservation de cadeau</h2>
-      <p>Bonjour,</p>
-      <p>Un invité a annulé sa réservation d'un élément de votre liste de cadeaux pour ${data.eventName}.</p>
+      <h2>Gift Reservation Canceled</h2>
+      <p>Hello,</p>
+      <p>A guest has canceled their reservation of an item from your gift list for ${data.eventName}.</p>
       <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <p><strong>Invité:</strong> ${data.guestName}</p>
-        <p><strong>Cadeau:</strong> ${data.giftName}</p>
+        <p><strong>Guest:</strong> ${data.guestName}</p>
+        <p><strong>Gift:</strong> ${data.giftName}</p>
       </div>
-      <p>Cet élément est maintenant disponible pour d'autres invités.</p>
-      <p>Vous pouvez consulter votre liste de cadeaux sur la page de détail de votre événement.</p>
-      <p>Cordialement,<br>L'équipe InviteWave</p>
+      <p>This item is now available for other guests.</p>
+      <p>You can view your gift list on your event details page.</p>
+      <p>Best regards,<br>The Event Planner Team</p>
     </div>
   `;
   
   return await sendEmail(to, subject, html);
 };
+
+// Export the sendEmail function to make it accessible in other modules
+exports.sendEmail = sendEmail;

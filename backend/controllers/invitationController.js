@@ -210,10 +210,13 @@ exports.sendInvitations = async (req, res) => {
         const guest = invitation.guest;
         const invitationUrl = `${process.env.FRONTEND_URL}/invitation/${invitation.uniqueCode}`;
         
+        let sent = false;
+        
         // Send based on method
         if (invitation.sendMethod === 'email' || invitation.sendMethod === 'both') {
           if (guest.email) {
             await sendEmailInvitation(guest.email, guest.name, event, invitation.message, invitationUrl);
+            sent = true;
           } else if (invitation.sendMethod === 'email') {
             throw new Error('Email address not available');
           }
@@ -222,9 +225,15 @@ exports.sendInvitations = async (req, res) => {
         if (invitation.sendMethod === 'whatsapp' || invitation.sendMethod === 'both') {
           if (guest.phone) {
             await sendWhatsAppInvitation(guest.phone, guest.name, event, invitation.message, invitationUrl);
+            sent = true;
           } else if (invitation.sendMethod === 'whatsapp') {
             throw new Error('Phone number not available');
           }
+        }
+
+        // Check if at least one method was successful
+        if (!sent) {
+          throw new Error('No valid contact method available for this guest');
         }
 
         // Update invitation status
@@ -237,7 +246,7 @@ exports.sendInvitations = async (req, res) => {
         // Mark as failed
         console.error('Send invitation error:', error);
   
-        // Déterminer le type d'erreur pour un message plus précis
+        // Determine error type for more precise message
         let errorMessage = 'Failed to send';
         
         if (error.code === 'EAUTH') {
@@ -246,9 +255,9 @@ exports.sendInvitations = async (req, res) => {
           errorMessage = error.message;
         }
         
-        // Marquer l'invitation comme échouée avec un message plus informatif
+        // Mark invitation as failed with informative message
         invitation.status = 'failed';
-        invitation.failureReason = errorMessage; // Si vous avez ce champ dans votre modèle
+        invitation.failureReason = errorMessage;
         await invitation.save();
         
         results.failed.push({

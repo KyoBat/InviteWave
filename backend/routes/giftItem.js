@@ -1,62 +1,91 @@
-// backend/routes/giftItem.js
+// routes/giftItem.js
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const giftItemController = require('../controllers/giftItemController');
+const { giftItemController } = require('../controllers');
 const { auth } = require('../middlewares');
-const { body, validationResult } = require('express-validator');
+const Joi = require('joi');
+const { validation } = require('../middlewares');
 
-// Middleware de validation
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ 
-      message: 'Validation error', 
-      errors: errors.array() 
-    });
-  }
-  next();
-};
+// Validation schemas
+const createGiftItemSchema = Joi.object({
+  name: Joi.string().required().trim(),
+  description: Joi.string().allow('', null).trim(),
+  quantity: Joi.number().integer().min(1).required(),
+  isEssential: Joi.boolean().default(false),
+  imageUrl: Joi.string().uri().allow('', null).trim(),
+  //eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true }
+});
 
-// Routes GET
+const updateGiftItemSchema = Joi.object({
+  name: Joi.string().required().trim(),
+  description: Joi.string().allow('', null).trim(),
+  quantity: Joi.number().integer().min(1).required(),
+  isEssential: Joi.boolean().default(false),
+  imageUrl: Joi.string().uri().allow('', null).trim()
+});
+
+const reorderGiftItemsSchema = Joi.object({
+  items: Joi.array().items(
+    Joi.object({
+      id: Joi.string().required(),
+      order: Joi.number().integer().min(0).required()
+    })
+  ).required()
+});
+
+const assignGiftItemSchema = Joi.object({
+  guestId: Joi.string().required(),
+  quantity: Joi.number().integer().min(1).required(),
+  message: Joi.string().allow('', null).trim()
+});
+
+const unassignGiftItemSchema = Joi.object({
+  guestId: Joi.string().required()
+});
+
+// GET routes
 router.get('/', giftItemController.getAllGiftItems);
 router.get('/reservations/:guestId', giftItemController.getGuestReservations);
 router.get('/:giftId', giftItemController.getGiftItemById);
 
-// Routes POST avec validation
-router.post('/:giftId/assign', [
-  body('guestId').notEmpty().withMessage('L\'identifiant de l\'invité est requis').isMongoId(),
-  body('quantity').isInt({ min: 1 }).withMessage('La quantité doit être un entier positif'),
-  body('message').optional().trim()
-], validateRequest, giftItemController.assignGiftItem);
+// POST routes with validation
+router.post(
+  '/:giftId/assign',
+  validation.validateBody(assignGiftItemSchema),
+  giftItemController.assignGiftItem
+);
 
-router.post('/:giftId/unassign', [
-  body('guestId').notEmpty().withMessage('L\'identifiant de l\'invité est requis').isMongoId()
-], validateRequest, giftItemController.unassignGiftItem);
+router.post(
+  '/:giftId/unassign',
+  validation.validateBody(unassignGiftItemSchema),
+  giftItemController.unassignGiftItem
+);
 
-// Route de création avec validation
-router.post('/', auth, [
-  body('name').notEmpty().withMessage('Le nom est requis').trim(),
-  body('description').optional().trim(),
-  body('quantity').isInt({ min: 1 }).withMessage('La quantité doit être un entier positif'),
-  body('isEssential').optional().isBoolean().withMessage('Le champ isEssential doit être un booléen'),
-  body('imageUrl').optional().isURL().withMessage('L\'URL de l\'image doit être valide').trim()
-], validateRequest, giftItemController.createGiftItem);
+// Create route with validation
+router.post(
+  '/',
+  auth.auth,
+  validation.validateBody(createGiftItemSchema),
+  giftItemController.createGiftItem
+);
 
-// Routes PUT avec validation
-// Note: la route spécifique doit être avant la route avec paramètre
-router.put('/reorder', auth, [
-  body('items').isArray().withMessage('Les données items doivent être un tableau')
-], validateRequest, giftItemController.reorderGiftItems);
+// PUT routes with validation
+// Note: specific route must be before the route with parameter
+router.put(
+  '/reorder',
+  auth.auth,
+  validation.validateBody(reorderGiftItemsSchema),
+  giftItemController.reorderGiftItems
+);
 
-router.put('/:giftId', auth, [
-  body('name').notEmpty().withMessage('Le nom est requis').trim(),
-  body('description').optional().trim(),
-  body('quantity').isInt({ min: 1 }).withMessage('La quantité doit être un entier positif'),
-  body('isEssential').optional().isBoolean().withMessage('Le champ isEssential doit être un booléen'),
-  body('imageUrl').optional().isURL().withMessage('L\'URL de l\'image doit être valide').trim()
-], validateRequest, giftItemController.updateGiftItem);
+router.put(
+  '/:giftId',
+  auth.auth,
+  validation.validateBody(updateGiftItemSchema),
+  giftItemController.updateGiftItem
+);
 
-// Route DELETE
-router.delete('/:giftId', auth, giftItemController.deleteGiftItem);
+// DELETE route
+router.delete('/:giftId', auth.auth, giftItemController.deleteGiftItem);
 
 module.exports = router;

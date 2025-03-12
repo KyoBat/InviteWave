@@ -1,101 +1,125 @@
 // web-client/src/services/gift.js
 import api from './api';
+import config from '../config';
 
 /**
- * Obtenir tous les cadeaux pour un événement
- * @param {string} eventId - ID de l'événement
- * @param {Object} params - Paramètres de requête (status, guestId)
- * @returns {Promise} - Promise avec les données de réponse
+ * Get all gift items for an event (simplified version)
+ * @param {string} eventId - Event ID
+ * @returns {Promise} - Promise with response data
  */
-export const getAllGifts = async (eventId, params = {}) => {
-  return api.get(`/events/${eventId}/gifts`, { params });
+export const getGiftItems = async (eventId) => {
+  console.log(`API Call: GET /events/${eventId}/gifts`);
+  return await api.get(`/events/${eventId}/gifts`);
 };
 
 /**
- * Obtenir un cadeau spécifique
- * @param {string} eventId - ID de l'événement
- * @param {string} giftId - ID du cadeau
- * @param {Object} params - Paramètres de requête (guestId)
- * @returns {Promise} - Promise avec les données de réponse
+ * Get all gift items for an event with additional parameters
+ * @param {string} eventId - Event ID
+ * @param {Object} params - Query parameters (status, guestId)
+ * @returns {Promise} - Promise with response data
+ */
+export const getAllGifts = async (eventId, params = {}) => {
+  const url = `/events/${eventId}/gifts`;
+  console.log('Sending request to:', url);
+  console.log('URL GetALLgift:', { params } );
+  return await api.get(`/api/events/${eventId}/gifts`, { params });
+};
+
+/**
+ * Get a specific gift item
+ * @param {string} eventId - Event ID
+ * @param {string} giftId - Gift ID
+ * @param {Object} params - Query parameters (guestId)
+ * @returns {Promise} - Promise with response data
  */
 export const getGiftById = async (eventId, giftId, params = {}) => {
   return api.get(`/events/${eventId}/gifts/${giftId}`, { params });
 };
 
 /**
- * Créer un nouveau cadeau
- * @param {string} eventId - ID de l'événement
- * @param {Object} giftData - Données du cadeau
- * @returns {Promise} - Promise avec les données de réponse
+ * Create a new gift item
+ * @param {string} eventId - Event ID
+ * @param {Object} giftData - Gift data
+ * @returns {Promise} - Promise with response data
  */
-export const createGift = async (eventId, giftData) => {
-  return api.post(`/events/${eventId}/gifts`, giftData);
-};
+//export const createGift = async (eventId, giftData) => {
+//  console.log(`Sending request to: /events/${eventId}/gifts`);
+//  console.log('URL complète:', `${config.apiUrl}/events/${eventId}/gifts`);
+//  return api.post(`/events/${eventId}/gifts`, giftData);
+//}
 
+export const createGift = async (eventId, giftData) => {
+  const url = `/events/${eventId}/gifts`;
+  console.log('Sending request to:', url);
+  console.log('URL pzrtirll:', config.apiUrl );
+  console.log('URL complète:', config.apiUrl + url);
+  return api.post(url, giftData);
+};
 /**
- * Mettre à jour un cadeau existant
- * @param {string} eventId - ID de l'événement
- * @param {string} giftId - ID du cadeau
- * @param {Object} giftData - Données mises à jour du cadeau
- * @returns {Promise} - Promise avec les données de réponse
+ * Update an existing gift item
+ * @param {string} eventId - Event ID
+ * @param {string} giftId - Gift ID
+ * @param {Object} giftData - Updated gift data
+ * @returns {Promise} - Promise with response data
  */
 export const updateGift = async (eventId, giftId, giftData) => {
   return api.put(`/events/${eventId}/gifts/${giftId}`, giftData);
 };
 
 /**
- * Supprimer un cadeau
- * @param {string} eventId - ID de l'événement
- * @param {string} giftId - ID du cadeau
- * @returns {Promise} - Promise avec les données de réponse
+ * Delete a gift item
+ * @param {string} eventId - Event ID
+ * @param {string} giftId - Gift ID
+ * @returns {Promise} - Promise with response data
  */
 export const deleteGift = async (eventId, giftId) => {
   return api.delete(`/events/${eventId}/gifts/${giftId}`);
 };
 
 /**
- * Réserver un cadeau
- * @param {string} eventId - ID de l'événement
- * @param {string} giftId - ID du cadeau
- * @param {Object} assignData - Données de réservation {guestId, quantity, message}
- * @returns {Promise} - Promise avec les données de réponse
+ * Reserve a gift item
+ * @param {string} eventId - Event ID
+ * @param {string} giftId - Gift ID
+ * @param {Object} assignData - Reservation data {guestId, quantity, message}
+ * @returns {Promise} - Promise with response data
  */
 export const assignGift = async (eventId, giftId, assignData) => {
   return api.post(`/events/${eventId}/gifts/${giftId}/assign`, assignData);
 };
 
 /**
- * Annuler la réservation d'un cadeau
- * @param {string} eventId - ID de l'événement
- * @param {string} giftId - ID du cadeau
- * @param {string} guestId - ID de l'invité
- * @returns {Promise} - Promise avec les données de réponse
+ * Cancel a gift item reservation
+ * @param {string} eventId - Event ID
+ * @param {string} giftId - Gift ID
+ * @param {string} guestId - Guest ID
+ * @returns {Promise} - Promise with response data
  */
 export const unassignGift = async (eventId, giftId, guestId) => {
   return api.post(`/events/${eventId}/gifts/${giftId}/unassign`, { guestId });
 };
 
 /**
- * Réorganiser les cadeaux
- * @param {string} eventId - ID de l'événement
- * @param {Array} items - Tableau d'objets {id, order}
- * @returns {Promise} - Promise avec les données de réponse
+ * Reorder gift items
+ * @param {string} eventId - Event ID
+ * @param {Array} items - Array of objects {id, order}
+ * @returns {Promise} - Promise with response data
  */
 export const reorderGifts = async (eventId, items) => {
   return api.put(`/events/${eventId}/gifts/reorder`, { items });
 };
 
 /**
- * Obtenir les réservations d'un invité
- * @param {string} eventId - ID de l'événement
- * @param {string} guestId - ID de l'invité
- * @returns {Promise} - Promise avec les données de réponse
+ * Get a guest's reservations
+ * @param {string} eventId - Event ID
+ * @param {string} guestId - Guest ID
+ * @returns {Promise} - Promise with response data
  */
 export const getGuestReservations = async (eventId, guestId) => {
   return api.get(`/events/${eventId}/gifts/reservations/${guestId}`);
 };
 
 export default {
+  getGiftItems,
   getAllGifts,
   getGiftById,
   createGift,
@@ -105,8 +129,4 @@ export default {
   unassignGift,
   reorderGifts,
   getGuestReservations
-};
-
-export const getGiftItems = (eventId) => {
-  return api.get(`/api/events/${eventId}/gifts`); // Ajoutez /api si nécessaire
 };

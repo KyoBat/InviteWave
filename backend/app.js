@@ -34,6 +34,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // API routes
 app.use('/api', routes);
 
+
 // Error handling
 app.use(errorHandler);
 

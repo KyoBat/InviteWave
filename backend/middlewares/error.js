@@ -52,3 +52,5 @@ exports.errorHandler = (err, req, res, next) => {
       error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
     });
   };
+
+  

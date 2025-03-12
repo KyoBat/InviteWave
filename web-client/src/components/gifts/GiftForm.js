@@ -47,11 +47,11 @@ const GiftForm = () => {
           setImagePreview(imageUrl);
         }
       } else {
-        setError('Erreur lors de la récupération des données du cadeau');
+        setError('Error retrieving gift data');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de la récupération des données du cadeau:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error retrieving gift data:', err);
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ const GiftForm = () => {
     if (file) {
       setImageFile(file);
       
-      // Créer une URL pour l'aperçu
+      // Create URL for preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -84,25 +84,25 @@ const GiftForm = () => {
     setSaving(true);
     
     try {
-      // Valider le formulaire
+      // Validate form
       if (!formData.name.trim()) {
-        throw new Error('Le nom du cadeau est requis');
+        throw new Error('Gift name is required');
       }
       
       if (formData.quantity < 1) {
-        throw new Error('La quantité doit être au moins 1');
+        throw new Error('Quantity must be at least 1');
       }
       
-      // Si un fichier image a été sélectionné, le télécharger d'abord
+      // If an image file has been selected, upload it first
       let updatedImageUrl = formData.imageUrl;
       if (imageFile) {
-        // Ici, vous devriez implémenter le téléchargement du fichier
-        // via votre API avant de continuer avec la création/mise à jour du cadeau
-        // Par exemple:
+        // Here you should implement file upload through your API
+        // before continuing with gift creation/updating
+        // For example:
         // const uploadResponse = await uploadImage(eventId, imageFile);
         // updatedImageUrl = uploadResponse.data.imageUrl;
         
-        // Pour cet exemple, nous allons simplement utiliser l'URL de prévisualisation
+        // For this example, we'll simply use the preview URL
         updatedImageUrl = imagePreview;
       }
       
@@ -120,14 +120,14 @@ const GiftForm = () => {
       }
       
       if (response.data && response.data.success) {
-        // Rediriger vers la liste des cadeaux après le succès
+        // Redirect to gift list after success
         navigate(`/events/${eventId}/gifts`);
       } else {
-        throw new Error('Erreur lors de l\'enregistrement du cadeau');
+        throw new Error('Error saving gift');
       }
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue');
-      console.error('Erreur lors de l\'enregistrement du cadeau:', err);
+      setError(err.message || 'An error occurred');
+      console.error('Error saving gift:', err);
     } finally {
       setSaving(false);
     }
@@ -137,24 +137,24 @@ const GiftForm = () => {
     navigate(`/events/${eventId}/gifts`);
   };
 
-  if (loading) return <div className="loading">Chargement...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="gift-form-container">
-      <h2>{isEditMode ? 'Modifier le cadeau' : 'Ajouter un cadeau'}</h2>
+      <h2>{isEditMode ? 'Edit Gift' : 'Add Gift'}</h2>
       
       {error && <div className="error-message">{error}</div>}
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Nom*</label>
+          <label htmlFor="name">Name*</label>
           <input
             type="text"
             id="name"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="Nom du cadeau"
+            placeholder="Gift name"
             required
           />
         </div>
@@ -166,14 +166,14 @@ const GiftForm = () => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            placeholder="Description détaillée"
+            placeholder="Detailed description"
             rows="4"
           />
         </div>
         
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="quantity">Quantité*</label>
+            <label htmlFor="quantity">Quantity*</label>
             <input
               type="number"
               id="quantity"
@@ -186,7 +186,7 @@ const GiftForm = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="isEssential">Priorité</label>
+            <label htmlFor="isEssential">Priority</label>
             <div className="checkbox-container">
               <input
                 type="checkbox"
@@ -195,13 +195,13 @@ const GiftForm = () => {
                 checked={formData.isEssential}
                 onChange={handleChange}
               />
-              <label htmlFor="isEssential" className="checkbox-label">Marquer comme essentiel</label>
+              <label htmlFor="isEssential" className="checkbox-label">Mark as essential</label>
             </div>
           </div>
         </div>
         
         <div className="form-group">
-          <label htmlFor="image">Image (optionnelle)</label>
+          <label htmlFor="image">Image (optional)</label>
           <div className="file-input-container">
             <input
               type="file"
@@ -211,14 +211,14 @@ const GiftForm = () => {
               className="file-input"
             />
             <label htmlFor="image" className="file-input-label">
-              <FontAwesomeIcon icon={faUpload} /> Choisir une image
+              <FontAwesomeIcon icon={faUpload} /> Choose an image
             </label>
           </div>
-          <p className="form-note">Format recommandé: JPG ou PNG, taille max: 2MB</p>
+          <p className="form-note">Recommended format: JPG or PNG, max size: 2MB</p>
           
           {imagePreview && (
             <div className="image-preview">
-              <img src={imagePreview} alt="Aperçu" />
+              <img src={imagePreview} alt="Preview" />
             </div>
           )}
         </div>
@@ -230,7 +230,7 @@ const GiftForm = () => {
             className="cancel-button"
             disabled={saving}
           >
-            <FontAwesomeIcon icon={faTimes} /> Annuler
+            <FontAwesomeIcon icon={faTimes} /> Cancel
           </button>
           
           <button 
@@ -238,7 +238,7 @@ const GiftForm = () => {
             className="submit-button"
             disabled={saving}
           >
-            <FontAwesomeIcon icon={faSave} /> {saving ? 'Enregistrement...' : 'Enregistrer'}
+            <FontAwesomeIcon icon={faSave} /> {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>

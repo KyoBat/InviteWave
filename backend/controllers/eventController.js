@@ -75,13 +75,18 @@ exports.updateEvent = async (req, res) => {
 
     // Apply updates
     updates.forEach(update => {
-      // BUG FIX: Gestion correcte de l'update de l'objet location
       if (update === 'location' && typeof req.body.location === 'object') {
-        // Fusionner les objets location au lieu de remplacer
-        event.location = {
-          ...event.location,
-          ...req.body.location
-        };
+        // Handle the location object properly
+        if (req.body.location.address) {
+          event.location.address = req.body.location.address;
+        }
+        
+        if (req.body.location.coordinates) {
+          event.location.coordinates = {
+            ...event.location.coordinates,
+            ...req.body.location.coordinates
+          };
+        }
       } else {
         event[update] = req.body[update];
       }
@@ -91,7 +96,6 @@ exports.updateEvent = async (req, res) => {
 
     res.json({ message: 'Event updated successfully', event });
   } catch (error) {
-    // BUG FIX: Ajouter plus d'informations de logging pour le débogage
     console.error('Update event error:', error);
     res.status(500).json({ message: 'Failed to update event', error: error.message });
   }
@@ -156,16 +160,18 @@ exports.getEventStats = async (req, res) => {
     
     // Group by category
     populatedInvitations.forEach(inv => {
-      const category = inv.guest.category;
-      if (!stats.byCategory[category]) {
-        stats.byCategory[category] = {
-          total: 0,
-          responses: { yes: 0, no: 0, maybe: 0, pending: 0 }
-        };
+      if (inv.guest) {
+        const category = inv.guest.category || 'other';
+        if (!stats.byCategory[category]) {
+          stats.byCategory[category] = {
+            total: 0,
+            responses: { yes: 0, no: 0, maybe: 0, pending: 0 }
+          };
+        }
+        
+        stats.byCategory[category].total++;
+        stats.byCategory[category].responses[inv.response.status]++;
       }
-      
-      stats.byCategory[category].total++;
-      stats.byCategory[category].responses[inv.response.status]++;
     });
 
     res.json(stats);
