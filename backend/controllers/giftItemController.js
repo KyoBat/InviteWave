@@ -31,7 +31,11 @@ exports.createGiftItem = async (req, res) => {
     const giftItem = new GiftItem({
       ...req.body,
       eventId,
-      order: itemCount + 1
+      order: itemCount + 1,
+      // Ajoutez ce bloc
+      imageUrl: req.file 
+        ? `/uploads/${req.file.filename}` 
+        : req.body.imageUrl || null
     });
     
     await giftItem.save();
@@ -202,9 +206,10 @@ exports.getGiftItemById = async (req, res) => {
  */
 exports.updateGiftItem = async (req, res) => {
   try {
+    console.log('Received update data:', req.body);
     const { eventId, giftId } = req.params;
-    
-    // Check if event belongs to user
+
+    // Vérifier si l'événement appartient à l'utilisateur
     const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
@@ -213,37 +218,45 @@ exports.updateGiftItem = async (req, res) => {
       });
     }
     
-    // Exclude specific fields from update
-    const { reservations, quantityReserved, ...updateData } = req.body;
-    
-    // Vérifier si imageUrl est présent et valide
-    if (updateData.imageUrl && typeof updateData.imageUrl !== "string") {
+    // Conversion forcée pour les types
+    const updateData = {
+      name: req.body.name,
+      description: req.body.description || null,
+      quantity: parseInt(req.body.quantity, 10),
+      isEssential: req.body.isEssential === 'true', // Conversion en boolean
+      imageUrl: req.file ? `/uploads/${req.file.filename}` : req.body.imageUrl || null
+    };
+
+    // Valider les données
+    /*const { error } = updateGiftItemSchema.validate(updateData);
+    if (error) {
       return res.status(400).json({
         success: false,
-        message: "Invalid image URL format"
+        message: error.details[0].message
       });
-    }
+    }*/
 
-    // Update the item
+    // Mettre à jour le cadeau
     const giftItem = await GiftItem.findOneAndUpdate(
       { _id: giftId, eventId },
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!giftItem) {
       return res.status(404).json({
         success: false,
         message: 'Gift item not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: giftItem
     });
-    
+
   } catch (error) {
+    console.error('Update error details:', error); // <-- Log complet
     res.status(400).json({
       success: false,
       message: error.message

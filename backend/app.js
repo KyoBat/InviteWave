@@ -32,7 +32,10 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bo
 app.use(morgan(config.app.env === 'development' ? 'dev' : 'combined')); // Logging
 
 // Serve static files
+//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Assurez-vous que le chemin est correct :
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+//app.use('/uploads', express.static('uploads'));
 //app.use('/api/events', giftItemRoutes);
 // Augmenter la limite de taille du corps de la requête
 app.use(bodyParser.json({ limit: '10mb' })); // Limite à 10 Mo

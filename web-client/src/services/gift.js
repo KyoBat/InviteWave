@@ -48,12 +48,20 @@ export const getGiftById = async (eventId, giftId, params = {}) => {
 //  return api.post(`/events/${eventId}/gifts`, giftData);
 //}
 
-export const createGift = async (eventId, giftData) => {
+/*export const createGift = async (eventId, giftData) => {
   const url = `/events/${eventId}/gifts`;
   console.log('Sending request to:', url);
   console.log('URL pzrtirll:', config.apiUrl );
   console.log('URL complète:', config.apiUrl + url);
   return api.post(url, giftData);
+};*/
+
+export const createGift = async (eventId, formData) => {
+  return api.post(`/events/${eventId}/gifts`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // Important pour les fichiers
+    },
+  });
 };
 /**
  * Update an existing gift item
@@ -62,8 +70,16 @@ export const createGift = async (eventId, giftData) => {
  * @param {Object} giftData - Updated gift data
  * @returns {Promise} - Promise with response data
  */
-export const updateGift = async (eventId, giftId, giftData) => {
+/*export const updateGift = async (eventId, giftId, giftData) => {
   return api.put(`/events/${eventId}/gifts/${giftId}`, giftData);
+};*/
+
+export const updateGift = async (eventId, giftId, formData) => {
+  return api.put(`/events/${eventId}/gifts/${giftId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // Important pour les fichiers
+    },
+  });
 };
 
 /**
@@ -120,11 +136,11 @@ export const getGuestReservations = async (eventId, guestId) => {
 
 export const uploadImage = async (eventId, file) => {
   const formData = new FormData();
-  formData.append('image', file); // 'image' doit correspondre au nom attendu par le serveur
+  formData.append('image', file);
 
   return api.post(`/events/${eventId}/gifts/upload-image`, formData, {
     headers: {
-      'Content-Type': 'multipart/form-data', // Important pour les fichiers
+      'Content-Type': 'multipart/form-data',
     },
   });
 };

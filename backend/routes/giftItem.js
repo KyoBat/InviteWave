@@ -8,21 +8,42 @@ const { validation } = require('../middlewares');
 const multer = require('multer');
 
 // Validation schemas
+
+
+// Configuration de multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+
+// Route pour uploader une image
+
 const createGiftItemSchema = Joi.object({
   name: Joi.string().required().trim(),
   description: Joi.string().allow('', null).trim(),
   quantity: Joi.number().integer().min(1).required(),
   isEssential: Joi.boolean().default(false),
-  imageUrl: Joi.string().uri().allow('', null).trim(),
+  imageUrl: Joi.string().pattern(
+    new RegExp('^(/uploads/|https?://).*'), // Accepte URLs locales (commençant par /uploads/) ou HTTP(S)
+    'URL invalide'
+  ).allow('', null).optional()
   //eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true }
 });
 
+// Modifiez le schéma updateGiftItemSchema
 const updateGiftItemSchema = Joi.object({
-  name: Joi.string().required().trim(),
-  description: Joi.string().allow('', null).trim(),
+  name: Joi.string().trim().required(),
+  description: Joi.string().trim().allow('', null).optional(),
   quantity: Joi.number().integer().min(1).required(),
-  isEssential: Joi.boolean().default(false),
-  imageUrl: Joi.string().uri().allow('', null).trim()
+  isEssential: Joi.boolean().optional(),
+  imageUrl: Joi.string().pattern(/^(\/uploads\/|https?:\/\/)/).allow('', null).optional()
 });
 
 const reorderGiftItemsSchema = Joi.object({
@@ -44,26 +65,17 @@ const unassignGiftItemSchema = Joi.object({
   guestId: Joi.string().required()
 });
 
-// Configuration de multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  },
-});
 
-const upload = multer({ storage });
-
-// Route pour uploader une image
-router.post('/:eventId/upload-image', upload.single('image'), (req, res) => {
+/*router.post('/upload-image', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No image uploaded' });
   }
-  const imageUrl = `/uploads/${req.file.filename}`;
-  res.json({ imageUrl });
-});
+  res.json({ 
+    success: true,
+    imageUrl: `/uploads/${req.file.filename}`
+  });
+});*/
+
 // GET routes
 router.get('/', giftItemController.getAllGiftItems);
 router.get('/reservations/:guestId', giftItemController.getGuestReservations);
@@ -86,6 +98,7 @@ router.post(
 router.post(
   '/',
   auth.auth,
+  upload.single('image'), // <-- Ajoutez multer ici
   validation.validateBody(createGiftItemSchema),
   giftItemController.createGiftItem
 );
@@ -102,6 +115,7 @@ router.put(
 router.put(
   '/:giftId',
   auth.auth,
+  upload.single('image'), // <-- Ajoutez multer ici
   validation.validateBody(updateGiftItemSchema),
   giftItemController.updateGiftItem
 );

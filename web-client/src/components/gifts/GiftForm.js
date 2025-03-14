@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { createGift, getGiftById, updateGift, uploadImage } from '../../services/gift'; // Importez uploadImage
+import { createGift, getGiftById, updateGift } from '../../services/gift'; // Supprimez uploadImage
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTimes, faUpload } from '@fortawesome/free-solid-svg-icons';
 
@@ -72,7 +72,7 @@ const GiftForm = () => {
         return;
       }
       setImageFile(file);
-  
+
       // Create URL for preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -85,49 +85,37 @@ const GiftForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-  
+
     try {
       // Validate form
       if (!formData.name.trim()) {
         throw new Error('Gift name is required');
       }
-  
+
       if (formData.quantity < 1) {
         throw new Error('Quantity must be at least 1');
       }
-  
-      // If an image file has been selected, upload it first
-      let updatedImageUrl = formData.imageUrl;
+
+      // Créez un objet FormData
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('quantity', formData.quantity);
+      formDataToSend.append('isEssential', formData.isEssential);
       if (imageFile) {
-        try {
-          const uploadResponse = await uploadImage(eventId, imageFile); // Upload the image
-          if (uploadResponse.data && uploadResponse.data.imageUrl) {
-            updatedImageUrl = uploadResponse.data.imageUrl; // Use the returned image URL
-          } else {
-            throw new Error('Failed to upload image');
-          }
-        } catch (uploadError) {
-          if (uploadError.response && uploadError.response.data && uploadError.response.data.message) {
-            throw new Error(uploadError.response.data.message); // Afficher le message d'erreur du serveur
-          } else {
-            throw new Error('Error uploading image');
-          }
-        }
+        formDataToSend.append('image', imageFile); // Ajoutez le fichier image
       }
-  
-      const giftData = {
-        ...formData,
-        imageUrl: updatedImageUrl,
-        quantity: parseInt(formData.quantity)
-      };
-  
+      // Ajouter après la création de formDataToSend :
+      if (isEditMode && !imageFile) {
+        formDataToSend.append('imageUrl', formData.imageUrl);
+      }
       let response;
       if (isEditMode) {
-        response = await updateGift(eventId, giftId, giftData);
+        response = await updateGift(eventId, giftId, formDataToSend); // Envoie FormData
       } else {
-        response = await createGift(eventId, giftData);
+        response = await createGift(eventId, formDataToSend); // Envoie FormData
       }
-  
+
       if (response.data && response.data.success) {
         // Redirect to gift list after success
         navigate(`/events/${eventId}/gifts`);
