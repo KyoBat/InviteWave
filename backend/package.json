@@ -23,7 +23,8 @@
         "multer": "^1.4.5-lts.1",
         "nodemailer": "^6.9.7",
         "react-feather": "^2.0.10",
-        "uuid": "^9.0.1"
+        "uuid": "^9.0.1",
+        "body-parser": "^1.20.2"
     },
     "devDependencies": {
         "jest": "^29.7.0",

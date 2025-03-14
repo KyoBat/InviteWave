@@ -22,7 +22,7 @@ export const getAllGifts = async (eventId, params = {}) => {
   const url = `/events/${eventId}/gifts`;
   console.log('Sending request to:', url);
   console.log('URL GetALLgift:', { params } );
-  return await api.get(`/api/events/${eventId}/gifts`, { params });
+  return await api.get(`/events/${eventId}/gifts`, { params });
 };
 
 /**
@@ -118,6 +118,16 @@ export const getGuestReservations = async (eventId, guestId) => {
   return api.get(`/events/${eventId}/gifts/reservations/${guestId}`);
 };
 
+export const uploadImage = async (eventId, file) => {
+  const formData = new FormData();
+  formData.append('image', file); // 'image' doit correspondre au nom attendu par le serveur
+
+  return api.post(`/events/${eventId}/gifts/upload-image`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // Important pour les fichiers
+    },
+  });
+};
 export default {
   getGiftItems,
   getAllGifts,
@@ -128,5 +138,6 @@ export default {
   assignGift,
   unassignGift,
   reorderGifts,
-  getGuestReservations
+  getGuestReservations,
+  uploadImage
 };

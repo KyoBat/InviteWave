@@ -8,6 +8,9 @@ const path = require('path');
 const config = require('./config');
 const routes = require('./routes');
 const { errorHandler } = require('./middlewares/error');
+const bodyParser = require('body-parser');
+const giftItemRoutes = require('./routes/giftItem');
+
 
 // Create Express app
 const app = express();
@@ -30,7 +33,10 @@ app.use(morgan(config.app.env === 'development' ? 'dev' : 'combined')); // Loggi
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+//app.use('/api/events', giftItemRoutes);
+// Augmenter la limite de taille du corps de la requête
+app.use(bodyParser.json({ limit: '10mb' })); // Limite à 10 Mo
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); // Limite à 10 Mo
 // API routes
 app.use('/api', routes);
 

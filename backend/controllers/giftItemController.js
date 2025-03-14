@@ -15,7 +15,7 @@ exports.createGiftItem = async (req, res) => {
     const { eventId } = req.params;
     
     // Check if event exists and belongs to the user
-    //const event = await Event.findOne({ _id: eventId, userId: req.user.id });
+    //const event = await Event.findOne({ _id: eventId, userId: req.user._id });
     const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
@@ -101,7 +101,7 @@ exports.getAllGiftItems = async (req, res) => {
     }
     
     // Check if user is the organizer
-    const isOrganizer = event.userId.toString() === (req.user ? req.user.id : '');
+    const isOrganizer = event.creator.toString() === (req.user ? req.user._id.toString() : '');
     
     // If not the organizer, limit reservation information
     if (!isOrganizer) {
@@ -161,7 +161,7 @@ exports.getGiftItemById = async (req, res) => {
     
     // Check if user is the organizer
     const event = await Event.findById(eventId);
-    const isOrganizer = event.userId.toString() === (req.user ? req.user.id : '');
+    const isOrganizer = event.creator.toString() === (req.user ? req.user._id.toString() : '');
     
     let result = giftItem.toObject();
     
@@ -205,7 +205,7 @@ exports.updateGiftItem = async (req, res) => {
     const { eventId, giftId } = req.params;
     
     // Check if event belongs to user
-    const event = await Event.findOne({ _id: eventId, userId: req.user.id });
+    const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 
@@ -216,6 +216,14 @@ exports.updateGiftItem = async (req, res) => {
     // Exclude specific fields from update
     const { reservations, quantityReserved, ...updateData } = req.body;
     
+    // Vérifier si imageUrl est présent et valide
+    if (updateData.imageUrl && typeof updateData.imageUrl !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid image URL format"
+      });
+    }
+
     // Update the item
     const giftItem = await GiftItem.findOneAndUpdate(
       { _id: giftId, eventId },
@@ -253,7 +261,7 @@ exports.deleteGiftItem = async (req, res) => {
     const { eventId, giftId } = req.params;
     
     // Check if event belongs to user
-    const event = await Event.findOne({ _id: eventId, userId: req.user.id });
+    const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 
@@ -490,7 +498,7 @@ exports.reorderGiftItems = async (req, res) => {
     }
     
     // Check if event belongs to user
-    const event = await Event.findOne({ _id: eventId, userId: req.user.id });
+    const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
         success: false, 

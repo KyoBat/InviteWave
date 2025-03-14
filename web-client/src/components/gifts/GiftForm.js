@@ -1,7 +1,6 @@
-// web-client/src/components/gifts/GiftForm.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { createGift, getGiftById, updateGift } from '../../services/gift';
+import { createGift, getGiftById, updateGift, uploadImage } from '../../services/gift'; // Importez uploadImage
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTimes, faUpload } from '@fortawesome/free-solid-svg-icons';
 
@@ -68,8 +67,12 @@ const GiftForm = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB
+        setError('File size exceeds the limit of 2MB');
+        return;
+      }
       setImageFile(file);
-      
+  
       // Create URL for preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -82,43 +85,49 @@ const GiftForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    
+  
     try {
       // Validate form
       if (!formData.name.trim()) {
         throw new Error('Gift name is required');
       }
-      
+  
       if (formData.quantity < 1) {
         throw new Error('Quantity must be at least 1');
       }
-      
+  
       // If an image file has been selected, upload it first
       let updatedImageUrl = formData.imageUrl;
       if (imageFile) {
-        // Here you should implement file upload through your API
-        // before continuing with gift creation/updating
-        // For example:
-        // const uploadResponse = await uploadImage(eventId, imageFile);
-        // updatedImageUrl = uploadResponse.data.imageUrl;
-        
-        // For this example, we'll simply use the preview URL
-        updatedImageUrl = imagePreview;
+        try {
+          const uploadResponse = await uploadImage(eventId, imageFile); // Upload the image
+          if (uploadResponse.data && uploadResponse.data.imageUrl) {
+            updatedImageUrl = uploadResponse.data.imageUrl; // Use the returned image URL
+          } else {
+            throw new Error('Failed to upload image');
+          }
+        } catch (uploadError) {
+          if (uploadError.response && uploadError.response.data && uploadError.response.data.message) {
+            throw new Error(uploadError.response.data.message); // Afficher le message d'erreur du serveur
+          } else {
+            throw new Error('Error uploading image');
+          }
+        }
       }
-      
+  
       const giftData = {
         ...formData,
         imageUrl: updatedImageUrl,
         quantity: parseInt(formData.quantity)
       };
-      
+  
       let response;
       if (isEditMode) {
         response = await updateGift(eventId, giftId, giftData);
       } else {
         response = await createGift(eventId, giftData);
       }
-      
+  
       if (response.data && response.data.success) {
         // Redirect to gift list after success
         navigate(`/events/${eventId}/gifts`);
@@ -142,9 +151,9 @@ const GiftForm = () => {
   return (
     <div className="gift-form-container">
       <h2>{isEditMode ? 'Edit Gift' : 'Add Gift'}</h2>
-      
+
       {error && <div className="error-message">{error}</div>}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="name">Name*</label>
@@ -158,7 +167,7 @@ const GiftForm = () => {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="description">Description</label>
           <textarea
@@ -170,7 +179,7 @@ const GiftForm = () => {
             rows="4"
           />
         </div>
-        
+
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="quantity">Quantity*</label>
@@ -184,7 +193,7 @@ const GiftForm = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="isEssential">Priority</label>
             <div className="checkbox-container">
@@ -199,7 +208,7 @@ const GiftForm = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="image">Image (optional)</label>
           <div className="file-input-container">
@@ -215,26 +224,26 @@ const GiftForm = () => {
             </label>
           </div>
           <p className="form-note">Recommended format: JPG or PNG, max size: 2MB</p>
-          
+
           {imagePreview && (
             <div className="image-preview">
               <img src={imagePreview} alt="Preview" />
             </div>
           )}
         </div>
-        
+
         <div className="form-actions">
-          <button 
-            type="button" 
-            onClick={handleCancel} 
+          <button
+            type="button"
+            onClick={handleCancel}
             className="cancel-button"
             disabled={saving}
           >
             <FontAwesomeIcon icon={faTimes} /> Cancel
           </button>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="submit-button"
             disabled={saving}
           >

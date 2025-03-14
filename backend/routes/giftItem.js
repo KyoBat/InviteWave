@@ -5,6 +5,7 @@ const { giftItemController } = require('../controllers');
 const { auth } = require('../middlewares');
 const Joi = require('joi');
 const { validation } = require('../middlewares');
+const multer = require('multer');
 
 // Validation schemas
 const createGiftItemSchema = Joi.object({
@@ -43,6 +44,26 @@ const unassignGiftItemSchema = Joi.object({
   guestId: Joi.string().required()
 });
 
+// Configuration de multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+// Route pour uploader une image
+router.post('/:eventId/upload-image', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+  const imageUrl = `/uploads/${req.file.filename}`;
+  res.json({ imageUrl });
+});
 // GET routes
 router.get('/', giftItemController.getAllGiftItems);
 router.get('/reservations/:guestId', giftItemController.getGuestReservations);
@@ -86,6 +107,7 @@ router.put(
 );
 
 // DELETE route
+
 router.delete('/:giftId', auth.auth, giftItemController.deleteGiftItem);
 
 module.exports = router;
