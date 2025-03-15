@@ -8,8 +8,11 @@ import config from '../config';
  * @returns {Promise} - Promise with response data
  */
 export const getGiftItems = async (eventId) => {
-  console.log(`API Call: GET /events/${eventId}/gifts`);
-  return await api.get(`/events/${eventId}/gifts`);
+  return await api.get(`/events/${eventId}/gifts`, {
+    headers: { 
+      Authorization: `Bearer ${localStorage.getItem('token')}` 
+    }
+  });
 };
 
 /**

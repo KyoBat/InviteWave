@@ -16,6 +16,7 @@ import GiftAssignmentModal from './GiftAssignmentModal';
 import { formatDate } from '../../utils/dateUtils';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import config from '../../config'; // Chemin relatif à vérifier
 
 const GiftDetail = ({ guestId, isOrganizer = false }) => {
   const { eventId, giftId } = useParams();
@@ -184,8 +185,8 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
       <div className="gift-detail-content">
         <div className="gift-detail-main">
           <div className="gift-image">
-            {imageUrl ? (
-              <img src={imageUrl} alt={name} />
+          {imageUrl ? (
+              <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
             ) : (
               <div className="gift-no-image">
                 <FontAwesomeIcon icon={faGift} />

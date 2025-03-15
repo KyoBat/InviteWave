@@ -115,7 +115,7 @@ router.put(
 router.put(
   '/:giftId',
   auth.auth,
-  upload.single('image'), // <-- Ajoutez multer ici
+  upload.single('image'), // Accepte les requêtes avec ou sans fichier
   validation.validateBody(updateGiftItemSchema),
   giftItemController.updateGiftItem
 );

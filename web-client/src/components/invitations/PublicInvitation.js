@@ -1,10 +1,9 @@
-// src/components/invitations/PublicInvitation.js
+// Mise à jour complète de PublicInvitation.js pour résoudre les problèmes avec la liste de cadeaux
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { invitationService } from '../../services';
 import { format } from 'date-fns';
-
-// Nouvel import pour le composant de liste de cadeaux
 import GiftList from '../gifts/GiftList';
 
 const PublicInvitation = () => {
@@ -15,8 +14,8 @@ const PublicInvitation = () => {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  // État pour suivre l'invité
   const [guestId, setGuestId] = useState(null);
+  const [eventId, setEventId] = useState(null);
   
   const { code } = useParams();
 
@@ -24,7 +23,9 @@ const PublicInvitation = () => {
     const fetchInvitation = async () => {
       try {
         setLoading(true);
+        console.log('Fetching invitation with code:', code);
         const data = await invitationService.getInvitationByCode(code);
+        console.log('Invitation data received:', data);
         setInvitation(data.invitation);
         
         // Pre-fill response if already responded
@@ -36,8 +37,39 @@ const PublicInvitation = () => {
         }
         
         // Récupérer l'ID de l'invité
-        if (data.invitation.guest) {
+        if (data.invitation.guest && data.invitation.guest._id) {
           setGuestId(data.invitation.guest._id);
+          console.log('Guest ID set to:', data.invitation.guest._id);
+        }
+        
+        // Examiner la structure complète de l'objet event
+        console.log('Detailed event object structure:', data.invitation.event);
+        console.log('Event object keys:', Object.keys(data.invitation.event));
+        
+        // Essayons de trouver l'ID de l'événement, peut-être sous un nom différent
+        const event = data.invitation.event;
+        if (event) {
+          // Essayer plusieurs possibilités pour l'ID
+          const possibleId = event._id || event.id || event.eventId;
+          
+          if (possibleId) {
+            console.log('Found event ID:', possibleId);
+            setEventId(possibleId);
+          } else {
+            // Si nous ne trouvons pas d'ID explicite, explorons toutes les propriétés
+            for (const key in event) {
+              console.log(`Event property ${key}:`, event[key]);
+            }
+            
+            // S'il n'y a pas d'ID mais que nous avons besoin d'une valeur unique, utilisons le nom comme fallback temporaire
+            if (event.name) {
+              console.warn('No ID found, using event name as temporary identifier:', event.name);
+              // Note: Ce n'est pas idéal mais peut fonctionner temporairement pour déboguer
+              setEventId(event.name);
+            }
+          }
+        } else {
+          console.warn('Event object is missing or undefined:', data.invitation);
         }
       } catch (error) {
         setError('Invitation not found or has expired');
@@ -46,7 +78,7 @@ const PublicInvitation = () => {
         setLoading(false);
       }
     };
-
+  
     fetchInvitation();
   }, [code]);
 
@@ -70,14 +102,13 @@ const PublicInvitation = () => {
     setLoading(true);
     
     try {
-      // BUG FIX: Validation du code d'invitation
       if (!code) {
         throw new Error('Invitation code is missing');
       }
       
       await invitationService.respondToInvitation(code, {
         status: response,
-        message: message || '' // BUG FIX: S'assurer que message n'est jamais null ou undefined
+        message: message || ''
       });
       
       setSubmitted(true);
@@ -124,8 +155,6 @@ const PublicInvitation = () => {
 
   // Déterminer si l'invité a confirmé sa présence
   const isConfirmed = submitted && response === 'yes';
-  // Récupérer l'ID de l'événement
-  const eventId = invitation.event._id;
 
   return (
     <div className="public-invitation-container">
@@ -267,8 +296,22 @@ const PublicInvitation = () => {
               <div className="invitation-section-header">
                 <h3>Liste de cadeaux</h3>
                 <p>Si vous souhaitez nous offrir un cadeau, voici quelques idées.</p>
+                <p className="debug-info" style={{color: 'gray', fontSize: '12px'}}>
+                  Debug info - Event ID: {eventId ? eventId : 'non défini'}, Guest ID: {guestId ? guestId : 'non défini'}
+                </p>
               </div>
-              <GiftList eventId={eventId} guestId={guestId} isOrganizer={false} isPublic={true} />
+              
+              {/* Fallback: si nous n'avons pas d'event ID explicite mais avons les données d'invitation */}
+              {(eventId || invitation?.event) ? (
+                <GiftList 
+                  providedEventId={eventId} 
+                  guestId={guestId} 
+                  isOrganizer={false} 
+                  isPublic={true} 
+                />
+              ) : (
+                <div className="loading-message">Chargement de la liste de cadeaux...</div>
+              )}
             </div>
           )}
         </div>

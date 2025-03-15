@@ -6,7 +6,7 @@ import { faEdit, faTrash, faGift, faCheck } from '@fortawesome/free-solid-svg-ic
 import { assignGift, unassignGift, deleteGift } from '../../services/gift';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-
+import config from '../../config';
 const GiftListItem = ({ 
   gift, 
   isOrganizer, 
@@ -108,7 +108,7 @@ const GiftListItem = ({
       <div className={`gift-card ${isReserved ? 'reserved' : ''} ${isPartial ? 'partially-reserved' : ''}`}>
         <div className="gift-card-image">
           {imageUrl ? (
-            <img src={imageUrl} alt={name} />
+            <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
           ) : (
             <div className="gift-card-no-image">
               <FontAwesomeIcon icon={faGift} />
@@ -187,7 +187,7 @@ const GiftListItem = ({
         <td>
           <div className="gift-thumbnail">
             {imageUrl ? (
-              <img src={imageUrl} alt={name} />
+              <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
             ) : (
               <div className="gift-thumbnail-placeholder">
                 <FontAwesomeIcon icon={faGift} />
@@ -252,7 +252,7 @@ const GiftListItem = ({
       <div className={`gift-public-card ${isReserved ? 'reserved' : ''}`}>
         <div className="gift-public-image">
           {imageUrl ? (
-            <img src={imageUrl} alt={name} />
+            <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
           ) : (
             <div className="gift-public-placeholder">
               <FontAwesomeIcon icon={faGift} />

@@ -3,6 +3,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { createGift, getGiftById, updateGift } from '../../services/gift'; // Supprimez uploadImage
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTimes, faUpload } from '@fortawesome/free-solid-svg-icons';
+// En haut de GiftForm.js
+import config from '../../config'; // Chemin relatif à vérifier
 
 const GiftForm = () => {
   const { eventId, giftId } = useParams();
@@ -43,7 +45,10 @@ const GiftForm = () => {
           imageUrl: imageUrl || ''
         });
         if (imageUrl) {
-          setImagePreview(imageUrl);
+          //setImagePreview(imageUrl);
+          //setImagePreview(imageUrl ? `${config.apiUrl}${imageUrl}` : null);
+          //setImagePreview(imageUrl ? `${config.apiUrl}/uploads${imageUrl}` : null);
+          setImagePreview(imageUrl ? `${config.urlImage}/uploads/${imageUrl}` : null);
         }
       } else {
         setError('Error retrieving gift data');
@@ -97,13 +102,14 @@ const GiftForm = () => {
       }
 
       // Créez un objet FormData
+      // Dans handleSubmit :
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('quantity', formData.quantity);
-      formDataToSend.append('isEssential', formData.isEssential);
-      if (imageFile) {
-        formDataToSend.append('image', imageFile); // Ajoutez le fichier image
+      formDataToSend.append('quantity', formData.quantity.toString());
+      formDataToSend.append('isEssential', formData.isEssential.toString());
+
+      if (isEditMode && !imageFile && formData.imageUrl) {
+        formDataToSend.append('imageUrl', formData.imageUrl); // Garder l'URL existante
       }
       // Ajouter après la création de formDataToSend :
       if (isEditMode && !imageFile) {

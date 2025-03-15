@@ -34,7 +34,7 @@ exports.createGiftItem = async (req, res) => {
       order: itemCount + 1,
       // Ajoutez ce bloc
       imageUrl: req.file 
-        ? `/uploads/${req.file.filename}` 
+        ? req.file.filename 
         : req.body.imageUrl || null
     });
     
@@ -221,12 +221,11 @@ exports.updateGiftItem = async (req, res) => {
     // Conversion forcée pour les types
     const updateData = {
       name: req.body.name,
-      description: req.body.description || null,
-      quantity: parseInt(req.body.quantity, 10),
-      isEssential: req.body.isEssential === 'true', // Conversion en boolean
-      imageUrl: req.file ? `/uploads/${req.file.filename}` : req.body.imageUrl || null
+      description: req.body.description || '',
+      quantity: parseInt(req.body.quantity, 10) || 1,
+      isEssential: req.body.isEssential === 'true', // Conversion explicite
+      imageUrl: req.file ? req.file.filename : req.body.imageUrl || null
     };
-
     // Valider les données
     /*const { error } = updateGiftItemSchema.validate(updateData);
     if (error) {

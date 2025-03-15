@@ -34,7 +34,10 @@ app.use(morgan(config.app.env === 'development' ? 'dev' : 'combined')); // Loggi
 // Serve static files
 //app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Assurez-vous que le chemin est correct :
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static('uploads'));
+
+
 //app.use('/uploads', express.static('uploads'));
 //app.use('/api/events', giftItemRoutes);
 // Augmenter la limite de taille du corps de la requête
@@ -47,6 +50,12 @@ app.use('/api', routes);
 // Error handling
 app.use(errorHandler);
 
+// Ajouter pour debug :
+app.use((req, res, next) => {
+  console.log('Incoming request body:', req.body);
+  console.log('Files:', req.file);
+  next();
+});
 // Start server
 const PORT = config.app.port;
 app.listen(PORT, () => {

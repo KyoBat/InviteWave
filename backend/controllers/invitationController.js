@@ -115,6 +115,7 @@ exports.getInvitationByCode = async (req, res) => {
       invitation: {
         code: invitation.uniqueCode,
         event: {
+          _id: invitation.event._id, // Ajoutez cette propriété
           name: invitation.event.name,
           date: invitation.event.date,
           location: invitation.event.location,

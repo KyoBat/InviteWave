@@ -23,35 +23,78 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
 
   // Define fetchGifts outside useEffect to reuse it
   const fetchGifts = async () => {
-    if (!effectiveEventId) {
-      console.error('No event ID found');
-      setError('Missing event ID');
+    console.log('fetchGifts called with:', {
+      providedEventId, 
+      urlEventId, 
+      effectiveEventId: providedEventId || urlEventId,
+      isPublic
+    });
+    
+    const effectiveId = providedEventId || urlEventId;
+    
+    if (!effectiveId) {
+      console.error('No event ID found', {
+        providedEventId, 
+        urlEventId
+      });
+      
+      // Si nous sommes en mode public, essayons de continuer avec des données fictives ou un message
+      if (isPublic) {
+        console.log('Public mode detected, showing placeholder message instead of error');
+        setGifts([]);
+        setError('La liste de cadeaux n\'est pas disponible pour le moment.');
+      } else {
+        setError('Missing event ID');
+      }
+      
       setLoading(false);
       return;
     }
-
+  
     try {
       setLoading(true);
-      console.log('Fetching gifts for event:', effectiveEventId);
-      const response = await getGiftItems(effectiveEventId);
-      setGifts(response.data.data || []);
-
-      // Extract current guest's reservations
-      if (guestId) {
-        const reservations = response.data.data
-          .filter(gift => gift.isReservedByCurrentGuest)
-          .map(gift => ({
-            giftId: gift._id,
-            giftName: gift.name,
-            quantity: gift.currentGuestReservation ? gift.currentGuestReservation.quantity : 0,
-          }));
-        setMyReservations(reservations);
+      console.log('Fetching gifts for event:', effectiveId);
+      const response = await getGiftItems(effectiveId);
+      console.log('Gift items response:', response);
+      
+      // Vérifier la structure de la réponse
+      if (response && response.data && Array.isArray(response.data.data)) {
+        setGifts(response.data.data);
+        
+        // Extract current guest's reservations
+        if (guestId && response.data.data.length > 0) {
+          console.log('Processing reservations for guest:', guestId);
+          const reservations = response.data.data
+            .filter(gift => gift.isReservedByCurrentGuest)
+            .map(gift => ({
+              giftId: gift._id,
+              giftName: gift.name,
+              quantity: gift.currentGuestReservation ? gift.currentGuestReservation.quantity : 0,
+            }));
+          console.log('Extracted reservations:', reservations);
+          setMyReservations(reservations);
+        }
+      } else {
+        // Si la structure n'est pas comme attendue, gérer proprement
+        console.warn('Unexpected API response structure:', response);
+        setGifts([]);
+        if (isPublic) {
+          setError('Aucun cadeau n\'est disponible pour le moment.');
+        } else {
+          setError('Unexpected API response format');
+        }
       }
-
+  
       setError(null);
     } catch (err) {
       console.error('Error retrieving gifts:', err);
-      setError('Error retrieving gifts');
+      
+      // Message d'erreur plus convivial en mode public
+      if (isPublic) {
+        setError('La liste de cadeaux n\'est pas disponible pour le moment.');
+      } else {
+        setError('Error retrieving gifts: ' + (err.message || 'Unknown error'));
+      }
     } finally {
       setLoading(false);
     }
