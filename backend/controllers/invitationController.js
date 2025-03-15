@@ -124,6 +124,7 @@ exports.getInvitationByCode = async (req, res) => {
           coverImage: invitation.event.coverImage
         },
         guest: {
+          _id: invitation.guest._id,
           name: invitation.guest.name
         },
         response: invitation.response,

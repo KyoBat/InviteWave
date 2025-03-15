@@ -39,8 +39,20 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
     setLoading(true);
     setError(null);
     
+    // Log des données disponibles pour le débogage
+    console.log('Reservation data:', {
+      guestId,
+      eventId,
+      giftId: gift?._id,
+      quantity,
+      availableQuantity,
+      isReservedByCurrentGuest
+    });
+    
     try {
-      if (!guestId) {
+      // Vérification plus robuste de guestId
+      if (!guestId || guestId === 'undefined' || guestId === 'null') {
+        console.error('Missing or invalid guestId:', guestId);
         throw new Error('Guest ID required for reservation');
       }
       
@@ -58,50 +70,82 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
         message
       };
       
+      console.log('Sending reservation data:', assignData);
+      
       // If the guest has already reserved, cancel their reservation first
       if (isReservedByCurrentGuest) {
-        await unassignGift(eventId, gift._id, guestId);
+        console.log('Canceling existing reservation before updating');
+        const cancelResponse = await unassignGift(eventId, gift._id, guestId);
+        console.log('Cancel response:', cancelResponse);
       }
       
+      console.log('Making new reservation');
       const response = await assignGift(eventId, gift._id, assignData);
+      console.log('Reservation response:', response);
       
       if (response.data && response.data.success) {
+        console.log('Reservation successful');
         if (onComplete) onComplete();
       } else {
-        throw new Error('Error during reservation');
+        console.error('API returned success: false', response);
+        throw new Error(response.data?.message || 'Error during reservation');
       }
     } catch (err) {
-      setError(err.message || 'An error occurred');
-      console.error('Error during reservation:', err);
+      // Gestion plus détaillée des erreurs
+      const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
+      console.error('Error during reservation:', {
+        error: err,
+        message: errorMessage,
+        stack: err.stack
+      });
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleUnassign = async () => {
     setLoading(true);
     setError(null);
     
+    console.log('Canceling reservation with:', {
+      guestId,
+      eventId,
+      giftId: gift?._id
+    });
+    
     try {
-      if (!guestId) {
+      // Vérification plus robuste de guestId
+      if (!guestId || guestId === 'undefined' || guestId === 'null') {
+        console.error('Missing or invalid guestId for cancellation:', guestId);
         throw new Error('Guest ID required to cancel reservation');
       }
       
+      console.log('Sending cancellation request');
       const response = await unassignGift(eventId, gift._id, guestId);
+      console.log('Cancellation response:', response);
       
       if (response.data && response.data.success) {
+        console.log('Cancellation successful');
         if (onComplete) onComplete();
       } else {
-        throw new Error('Error canceling reservation');
+        console.error('API returned success: false for cancellation', response);
+        throw new Error(response.data?.message || 'Error canceling reservation');
       }
     } catch (err) {
-      setError(err.message || 'An error occurred');
-      console.error('Error canceling reservation:', err);
+      // Gestion plus détaillée des erreurs
+      const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
+      console.error('Error canceling reservation:', {
+        error: err,
+        message: errorMessage,
+        stack: err.stack
+      });
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-
+  
   if (!gift) return null;
 
   const isFullyReserved = gift.status === 'reserved' && !isReservedByCurrentGuest;
@@ -138,7 +182,13 @@ const GiftAssignmentModal = ({ gift, eventId, guestId, onClose, onComplete }) =>
           
           {error && <div className="error-message">{error}</div>}
           
-          {isFullyReserved ? (
+          {/* Vérification de l'ID invité avant d'afficher le formulaire */}
+          {!guestId ? (
+            <div className="error-message">
+              <p>Unable to identify you as a guest. Guest identification is required to reserve gifts.</p>
+              <p>Please try refreshing the page or contact the event organizer.</p>
+            </div>
+          ) : isFullyReserved ? (
             <div className="unavailable-message">
               <FontAwesomeIcon icon={faGift} size="2x" />
               <p>This gift is already fully reserved.</p>

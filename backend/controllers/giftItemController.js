@@ -1,9 +1,7 @@
 // controllers/giftItemController.js
 const mongoose = require('mongoose');
-const GiftItem = require('../models/giftItem');
-const Event = require('../models/events');
-const Guest = require('../models/guest');
 const { emailService } = require('../services');
+const { GiftItem, Event, Guest, Invitation } = require('../models');
 
 /**
  * Create a new gift item
@@ -331,14 +329,28 @@ exports.assignGiftItem = async (req, res) => {
     }
     
     // Check if guest exists and is associated with the event
-    const guest = await Guest.findOne({ _id: guestId, eventId });
+// Vérifier si l'invité existe d'abord
+    const guest = await Guest.findById(guestId);
     if (!guest) {
       return res.status(404).json({
         success: false,
-        message: 'Guest not found or not associated with this event'
+        message: 'Guest not found'
       });
     }
-    
+
+    // Vérifier si l'invité est associé à l'événement via une invitation acceptée
+    const invitation = await Invitation.findOne({ 
+      event: eventId,
+      guest: guestId,
+      'response.status': 'yes'  // L'invité a accepté l'invitation
+    });
+
+    if (!invitation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Guest not associated with this event or has not accepted the invitation'
+      });
+    }
     // Check if item exists
     const giftItem = await GiftItem.findOne({ _id: giftId, eventId });
     if (!giftItem) {
@@ -375,7 +387,7 @@ exports.assignGiftItem = async (req, res) => {
     await giftItem.save();
     
     // Get event information for notification
-    const event = await Event.findById(eventId).populate('userId', 'email name');
+    const event = await Event.findById(eventId).populate('creator', 'email name');
     
     // Send notification to organizer
     try {
@@ -461,7 +473,7 @@ exports.unassignGiftItem = async (req, res) => {
     await giftItem.save();
     
     // Get event information for notification
-    const event = await Event.findById(eventId).populate('userId', 'email name');
+    const event = await Event.findById(eventId).populate('creator', 'email name');
     
     // Send notification to organizer
     try {
