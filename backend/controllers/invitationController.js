@@ -1,7 +1,8 @@
 // controllers/invitationController.js
-const { Invitation, Event, Guest } = require('../models');
+//const { Invitation, Event, Guest } = require('../models');
 const { sendWhatsAppInvitation } = require('../services/whatsappService');
 const { sendEmailInvitation } = require('../services/emailService');
+const { GiftItem, Event, Guest, Invitation } = require('../models');
 
 // Get all invitations for an event
 exports.getEventInvitations = async (req, res) => {
