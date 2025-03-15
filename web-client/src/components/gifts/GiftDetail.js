@@ -229,35 +229,45 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {reservations.map((reservation, index) => (
-                      <tr key={index}>
-                        <td>
-                          {isOrganizer && reservation.guestId ? (
-                            reservation.guestId.name
-                          ) : (
-                            reservation.guestName || 'A guest'
-                          )}
-                          {reservation.guestId && guestId && reservation.guestId._id === guestId && (
-                            <span style={{ marginLeft: '5px', color: '#5c6bc0' }}>(You)</span>
-                          )}
-                        </td>
-                        <td>{reservation.quantity}</td>
-                        <td>
-                          {reservation.message ? (
-                            <span className="reservation-message">{reservation.message}</span>
-                          ) : (
-                            <em>No message</em>
-                          )}
-                        </td>
-                        <td>
-                          {reservation.createdAt ? (
-                            formatDate(reservation.createdAt)
-                          ) : (
-                            <em>Unknown date</em>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                  {reservations.map((reservation, index) => (
+                    <tr key={index}>
+                      <td>
+                        {/* Gestion plus robuste du nom de l'invité */}
+                        {(() => {
+                          // Si l'organisateur voit l'information et que guestId est un objet avec un nom
+                          if (isOrganizer && reservation.guestId && typeof reservation.guestId === 'object' && reservation.guestId.name) {
+                            return reservation.guestId.name;
+                          }
+                          // Sinon, utiliser guestName ou un nom générique
+                          return reservation.guestName || 'A guest';
+                        })()}
+                        
+                        {/* Marquer l'invité actuel */}
+                        {guestId && reservation.guestId && 
+                        ((typeof reservation.guestId === 'object' && reservation.guestId._id === guestId) ||
+                          (typeof reservation.guestId === 'string' && reservation.guestId === guestId)) && (
+                          <span style={{ marginLeft: '5px', color: '#5c6bc0' }}>(You)</span>
+                        )}
+                      </td>
+                      <td>{reservation.quantity || 1}</td>
+                      <td>
+                        {/* Afficher le message ou "No message" */}
+                        {reservation.message ? (
+                          <span className="reservation-message">{reservation.message}</span>
+                        ) : (
+                          <em>No message</em>
+                        )}
+                      </td>
+                      <td>
+                        {/* Formater la date ou afficher "Unknown date" */}
+                        {reservation.createdAt ? (
+                          formatDate(reservation.createdAt)
+                        ) : (
+                          <em>Unknown date</em>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                   </tbody>
                 </table>
               )}

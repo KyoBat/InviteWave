@@ -151,7 +151,7 @@ exports.getGiftItemById = async (req, res) => {
     const giftItem = await GiftItem.findOne({ _id: giftId, eventId })
       .populate({
         path: 'reservations.guestId',
-        select: 'name email phone'
+        select: 'name email phone _id'
       });
     
     if (!giftItem) {
@@ -173,22 +173,35 @@ exports.getGiftItemById = async (req, res) => {
       result.currentGuestReservation = giftItem.getGuestReservation(guestId);
     }
     
-    // If not the organizer, limit reservation information
+    // If not the organizer, limit reservation information but include message and date
     if (!isOrganizer) {
       if (result.reservations && result.reservations.length > 0) {
         result.reservations = result.reservations.map(res => ({
           quantity: res.quantity,
           // Keep only the first name for privacy
-          guestName: res.guestId ? res.guestId.name.split(' ')[0] : 'A guest'
+          guestName: res.guestId ? res.guestId.name.split(' ')[0] : 'A guest',
+          // Include these important fields
+          message: res.message || '',
+          createdAt: res.createdAt || new Date()
         }));
       }
+    } else {
+      // Pour l'organisateur, assurez-vous que tous les champs sont disponibles
+      if (result.reservations && result.reservations.length > 0) {
+        result.reservations = result.reservations.map(res => {
+          // Préservez l'objet guestId pour les organisateurs
+          return {
+            ...res,
+            message: res.message || '',
+            createdAt: res.createdAt || new Date()
+          };
+        });
+      }
     }
-    
-    res.status(200).json({
-      success: true,
-      data: result
-    });
-    
+  res.status(200).json({
+    success: true,
+    data: result
+  }); 
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -381,7 +394,8 @@ exports.assignGiftItem = async (req, res) => {
     giftItem.reservations.push({
       guestId,
       quantity: parseInt(quantity),
-      message: message || ''
+      message: message || '',
+      createdAt: new Date()
     });
     
     await giftItem.save();
