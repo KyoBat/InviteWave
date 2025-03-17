@@ -16,6 +16,12 @@ const api = axios.create({
 // Request interceptor for adding auth token
 api.interceptors.request.use(
   (config) => {
+    // Si les données sont FormData, supprimez l'en-tête Content-Type
+    // pour qu'axios définisse automatiquement le bon type avec boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     const token = authService.getToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;

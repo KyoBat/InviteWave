@@ -45,10 +45,8 @@ const GiftForm = () => {
           imageUrl: imageUrl || ''
         });
         if (imageUrl) {
-          //setImagePreview(imageUrl);
-          //setImagePreview(imageUrl ? `${config.apiUrl}${imageUrl}` : null);
-          //setImagePreview(imageUrl ? `${config.apiUrl}/uploads${imageUrl}` : null);
           setImagePreview(imageUrl ? `${config.urlImage}/uploads/${imageUrl}` : null);
+          console.log('Image URL (GridView):', `${config.urlImage}/uploads/${imageUrl}`);
         }
       } else {
         setError('Error retrieving gift data');
@@ -61,67 +59,79 @@ const GiftForm = () => {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB
-        setError('File size exceeds the limit of 2MB');
-        return;
-      }
-      setImageFile(file);
-
-      // Create URL for preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-
+    setError(null);
+  
     try {
       // Validate form
       if (!formData.name.trim()) {
         throw new Error('Gift name is required');
       }
-
+  
       if (formData.quantity < 1) {
         throw new Error('Quantity must be at least 1');
       }
-
-      // Créez un objet FormData
-      // Dans handleSubmit :
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('quantity', formData.quantity.toString());
-      formDataToSend.append('isEssential', formData.isEssential.toString());
-
-      if (isEditMode && !imageFile && formData.imageUrl) {
-        formDataToSend.append('imageUrl', formData.imageUrl); // Garder l'URL existante
-      }
-      // Ajouter après la création de formDataToSend :
-      if (isEditMode && !imageFile) {
-        formDataToSend.append('imageUrl', formData.imageUrl);
-      }
+  
       let response;
-      if (isEditMode) {
-        response = await updateGift(eventId, giftId, formDataToSend); // Envoie FormData
-      } else {
-        response = await createGift(eventId, formDataToSend); // Envoie FormData
-      }
+  
+      // Si nous avons un nouveau fichier image
+      if (imageFile) {
+        // Utiliser FormData seulement quand il y a un fichier
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('quantity', formData.quantity.toString());
+        formDataToSend.append('isEssential', formData.isEssential.toString());
+        formDataToSend.append('description', formData.description || '');
+        formDataToSend.append('image', imageFile);
+        
+        console.log('Envoi avec image:', {
+          name: formData.name,
+          hasImage: true
+        });
+        
+        console.log('FormData envoyé:', {
+          name: formData.name,
+          quantity: formData.quantity,
+          isEssential: formData.isEssential,
+          description: formData.description,
+          imageUrl: formData.imageUrl,
+          hasImageFile: !!imageFile
+        });
 
+        console.log('FormData créé, contient image:', imageFile.name);
+        console.log('Type de imageFile:', imageFile instanceof File);
+
+        
+        if (isEditMode) {
+          response = await updateGift(eventId, giftId, formDataToSend);
+        } else {
+          response = await createGift(eventId, formDataToSend);
+        }
+      } else {
+        // Utiliser JSON quand il n'y a pas de fichier
+        const dataToSend = {
+          name: formData.name,
+          quantity: parseInt(formData.quantity),
+          isEssential: formData.isEssential,
+          description: formData.description || ''
+        };
+        
+        // Si on est en mode édition et qu'on a une URL d'image existante
+        if (isEditMode && formData.imageUrl) {
+          dataToSend.imageUrl = formData.imageUrl;
+        }
+        
+        console.log('Envoi sans image:', dataToSend);
+        
+        if (isEditMode) {
+          response = await updateGift(eventId, giftId, dataToSend);
+        } else {
+          response = await createGift(eventId, dataToSend);
+        }
+      }
+  
       if (response.data && response.data.success) {
         // Redirect to gift list after success
         navigate(`/events/${eventId}/gifts`);
@@ -136,6 +146,31 @@ const GiftForm = () => {
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB
+        setError('File size exceeds the limit of 2MB');
+        return;
+      }
+      setImageFile(file);
+  
+      // Create URL for preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
   const handleCancel = () => {
     navigate(`/events/${eventId}/gifts`);
   };

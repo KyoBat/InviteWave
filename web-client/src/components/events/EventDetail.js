@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { eventService } from '../../services';
+import { invitationService } from '../../services';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import GiftManagement from '../gifts/GiftManagement';
@@ -12,6 +13,19 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0);
+  
+  // États pour la liste des invitations
+  const [invitations, setInvitations] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [selectedInvitations, setSelectedInvitations] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    sent: 0,
+    pending: 0,
+    responses: 0
+  });
   
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,6 +46,38 @@ const EventDetail = () => {
     fetchEvent();
   }, [id]);
   
+  // Charger les invitations lorsque l'onglet est sélectionné
+  useEffect(() => {
+    if (tabIndex === 1) {
+      fetchInvitations();
+    }
+  }, [tabIndex, id]);
+  
+  const fetchInvitations = async () => {
+    try {
+      const data = await invitationService.getEventInvitations(id);
+      setInvitations(data);
+      
+      // Calculer les statistiques
+      const totalInvitations = data.length;
+      const sentInvitations = data.filter(inv => inv.status === 'sent').length;
+      const pendingInvitations = data.filter(inv => inv.status === 'pending').length;
+      const responses = data.filter(inv => 
+        inv.response && 
+        (inv.response.status === 'yes' || inv.response.status === 'no' || inv.response.status === 'maybe')
+      ).length;
+      
+      setStats({
+        total: totalInvitations,
+        sent: sentInvitations,
+        pending: pendingInvitations,
+        responses: responses
+      });
+    } catch (error) {
+      console.error('Error fetching invitations:', error);
+    }
+  };
+  
   const handleDelete = async () => {
     try {
       setLoading(true);
@@ -43,6 +89,71 @@ const EventDetail = () => {
       setLoading(false);
     }
   };
+  
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+  };
+  
+  const toggleSelectAll = () => {
+    if (selectedInvitations.length === filteredInvitations.length) {
+      setSelectedInvitations([]);
+    } else {
+      setSelectedInvitations(filteredInvitations.map(inv => inv._id || inv.id));
+    }
+  };
+  
+  const toggleSelectInvitation = (invitationId) => {
+    if (selectedInvitations.includes(invitationId)) {
+      setSelectedInvitations(selectedInvitations.filter(id => id !== invitationId));
+    } else {
+      setSelectedInvitations([...selectedInvitations, invitationId]);
+    }
+  };
+  
+  // Filtrer les invitations selon les critères de recherche et de filtre
+  const filteredInvitations = invitations.filter(invitation => {
+    // Filtre de recherche
+    const guestName = invitation.guest?.name || '';
+    const guestEmail = invitation.guest?.email || '';
+    const searchMatch = 
+      guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guestEmail.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtre de statut/réponse
+    let statusMatch = true;
+    switch (filter) {
+      case 'pending':
+        statusMatch = invitation.status === 'pending';
+        break;
+      case 'sent':
+        statusMatch = invitation.status === 'sent';
+        break;
+      case 'failed':
+        statusMatch = invitation.status === 'failed';
+        break;
+      case 'yes':
+        statusMatch = invitation.response?.status === 'yes';
+        break;
+      case 'no':
+        statusMatch = invitation.response?.status === 'no';
+        break;
+      case 'maybe':
+        statusMatch = invitation.response?.status === 'maybe';
+        break;
+      case 'not-responded':
+        statusMatch = invitation.status === 'sent' && 
+                      (!invitation.response || invitation.response.status === 'pending');
+        break;
+      default:
+        statusMatch = true;
+    }
+    
+    return searchMatch && statusMatch;
+  });
   
   if (loading) {
     return <div className="loading">Loading event details...</div>;
@@ -64,6 +175,13 @@ const EventDetail = () => {
   // Assume organizer is current user (adapt according to your application logic)
   const isOrganizer = true;
   
+  // Formater la date pour l'affichage
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return format(date, 'MMM d, yyyy');
+  };
+  
   return (
     <div className="event-detail-container">
       <div className="event-detail-header">
@@ -82,11 +200,10 @@ const EventDetail = () => {
         </div>
       </div>
       
-      <Tabs>
+      <Tabs selectedIndex={tabIndex} onSelect={index => setTabIndex(index)}>
         <TabList>
           <Tab>Details</Tab>
-          <Tab>Guests</Tab>
-          <Tab>Invitations</Tab>
+          <Tab>Guests & Invitations</Tab>
           <Tab>Gifts</Tab>
         </TabList>
         
@@ -161,13 +278,13 @@ const EventDetail = () => {
             
             <div className="event-detail-sidebar">
               <div className="invitation-actions">
-                <h3>Invitations</h3>
-                <Link to={`/events/${id}/invitations`} className="button-primary">
-                  Manage Invitations
-                </Link>
-                <Link to={`/events/${id}/guests`} className="button-secondary">
-                  Manage Guests
-                </Link>
+                <h3>Management</h3>
+                <button 
+                  className="button-primary" 
+                  onClick={() => setTabIndex(1)}
+                >
+                  Manage Guests & Invitations
+                </button>
               </div>
               
               <div className="quick-stats">
@@ -181,14 +298,155 @@ const EventDetail = () => {
         </TabPanel>
         
         <TabPanel>
-          <div className="guests-tab-content">
-            <p>Guest tab content to be implemented</p>
-          </div>
-        </TabPanel>
-        
-        <TabPanel>
-          <div className="invitations-tab-content">
-            <p>Invitations tab content to be implemented</p>
+          <div className="invitation-list-container">
+            <div className="invitation-list-header">
+              <h2>Invitations for {event.name}</h2>
+              <Link className="create-button" to={`/events/${id}/invitations/create`}>
+                Create Invitations
+              </Link>
+            </div>
+            
+            <div className="invitation-list-actions">
+              <div className="search-container">
+                <input 
+                  type="text" 
+                  placeholder="Search guests..." 
+                  className="search-input"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
+              </div>
+              
+              <div className="filter-container">
+                <select 
+                  className="filter-select"
+                  value={filter}
+                  onChange={handleFilterChange}
+                >
+                  <option value="all">All Invitations</option>
+                  <option value="pending">Pending Invitations</option>
+                  <option value="sent">Sent Invitations</option>
+                  <option value="failed">Failed Invitations</option>
+                  <option value="yes">Responded: Yes</option>
+                  <option value="no">Responded: No</option>
+                  <option value="maybe">Responded: Maybe</option>
+                  <option value="not-responded">Not Responded</option>
+                </select>
+              </div>
+              
+              <button 
+                className="select-all-button"
+                onClick={toggleSelectAll}
+              >
+                Select All
+              </button>
+              
+              <button 
+                className="send-button"
+                disabled={selectedInvitations.length === 0}
+              >
+                Send Selected ({selectedInvitations.length})
+              </button>
+            </div>
+            
+            <div className="invitation-list">
+              <table className="invitation-table">
+                <thead>
+                  <tr>
+                    <th className="checkbox-column">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedInvitations.length === filteredInvitations.length && filteredInvitations.length > 0}
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
+                    <th>Guest</th>
+                    <th>Contact</th>
+                    <th>Send Method</th>
+                    <th>Status</th>
+                    <th>Response</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredInvitations.map(invitation => {
+                    const canBeSelected = invitation.status !== 'sent';
+                    const isSelected = selectedInvitations.includes(invitation._id || invitation.id);
+                    
+                    return (
+                      <tr key={invitation._id || invitation.id} className={isSelected ? 'selected' : ''}>
+                        <td className="checkbox-column">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectInvitation(invitation._id || invitation.id)}
+                            disabled={!canBeSelected}
+                          />
+                        </td>
+                        <td className="guest-column">
+                          <div className="guest-name">{invitation.guest?.name || 'Unknown Guest'}</div>
+                        </td>
+                        <td className="guest-contact">
+                          {invitation.guest?.email && (
+                            <div className="email">{invitation.guest.email}</div>
+                          )}
+                        </td>
+                        <td className="send-method">
+                          {invitation.guest?.email ? 'Email' : 'SMS'}
+                        </td>
+                        <td className={`status-column status-${invitation.status}`}>
+                          <span className="status-text">{invitation.status}</span>
+                          {invitation.sentAt && (
+                            <div className="sent-date">{formatDate(invitation.sentAt)}</div>
+                          )}
+                        </td>
+                        <td className={`response-column response-${invitation.response?.status || 'pending'}`}>
+                          <span className="response-text">
+                            {invitation.response?.status === 'yes' ? 'Attending' :
+                             invitation.response?.status === 'no' ? 'Not Attending' :
+                             invitation.response?.status === 'maybe' ? 'Maybe' :
+                             'Awaiting Response'}
+                          </span>
+                          {invitation.response?.updatedAt && (
+                            <div className="response-date">{formatDate(invitation.response.updatedAt)}</div>
+                          )}
+                        </td>
+                        <td className="actions-column">
+                          <button 
+                            className="action-button view-button" 
+                            title="View Details"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="invitation-stats">
+              <div className="stat-item">
+                <span className="stat-label">Total Invitations:</span>
+                <span className="stat-value">{stats.total}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Sent:</span>
+                <span className="stat-value">{stats.sent}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Pending:</span>
+                <span className="stat-value">{stats.pending}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Responses:</span>
+                <span className="stat-value">{stats.responses}</span>
+              </div>
+              <Link className="view-stats-link" to={`/events/${id}/stats`}>
+                View Detailed Statistics
+              </Link>
+            </div>
           </div>
         </TabPanel>
         

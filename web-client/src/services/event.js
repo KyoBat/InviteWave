@@ -38,6 +38,7 @@ const eventService = {
     return response.data;
   },
   
+  
   // Upload event cover image
   uploadCoverImage: async (file) => {
     const formData = new FormData();

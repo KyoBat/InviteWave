@@ -1,4 +1,6 @@
+uploads/
 node_modules/
+
 # Ignorer les fichiers de configuration locale
 .env
 .env.local

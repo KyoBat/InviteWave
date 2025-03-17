@@ -9,13 +9,11 @@ const { GiftItem, Event, Guest, Invitation } = require('../models');
  * @access Private (organizer)
  */
 exports.createGiftItem = async (req, res) => {
-  console.log('CREATE: Headers:', req.headers);
-  console.log('CREATE: Body:', req.body);
-  console.log('CREATE: File:', req.file);
   try {
     const { eventId } = req.params;
     
     // Check if event exists and belongs to the user
+    //const event = await Event.findOne({ _id: eventId, userId: req.user._id });
     const event = await Event.findOne({ _id: eventId, creator: req.user._id });
     if (!event) {
       return res.status(404).json({ 
@@ -34,13 +32,10 @@ exports.createGiftItem = async (req, res) => {
       order: itemCount + 1,
       // Ajoutez ce bloc
       imageUrl: req.file 
-      ? req.file.filename // Juste le nom de fichier
-      : req.body.imageUrl || null
+        ? req.file.filename 
+        : req.body.imageUrl || null
     });
     
-    console.log('CreateGiftItem called');
-    console.log('Multer file:', req.file);
-    console.log('Form data:', req.body);
     await giftItem.save();
     
     res.status(201).json({
@@ -221,14 +216,8 @@ exports.getGiftItemById = async (req, res) => {
  * @access Private (organizer)
  */
 exports.updateGiftItem = async (req, res) => {
-  console.log('CREATE: Headers:', req.headers);
-  console.log('CREATE: Body:', req.body);
-  console.log('CREATE: File:', req.file);
   try {
     console.log('Received update data:', req.body);
-    console.log('UpdateGiftItem called');
-    console.log('Multer file:', req.file);
-    console.log('Form data:', req.body);
     const { eventId, giftId } = req.params;
 
     // Vérifier si l'événement appartient à l'utilisateur
@@ -245,12 +234,11 @@ exports.updateGiftItem = async (req, res) => {
       name: req.body.name,
       description: req.body.description || '',
       quantity: parseInt(req.body.quantity, 10) || 1,
-      isEssential: req.body.isEssential === true || req.body.isEssential === 'true', 
+      isEssential: req.body.isEssential === 'true', // Conversion explicite
       imageUrl: req.file 
-        ? `/${req.file.filename}` // Ajouter le slash comme dans createGiftItem
-        : req.body.imageUrl || null
-    };
-
+    ? `/${req.file.filename}` // Assurez-vous que le slash initial est ajouté ici aussi
+    : req.body.imageUrl || null
+};
     // Valider les données
     /*const { error } = updateGiftItemSchema.validate(updateData);
     if (error) {
@@ -420,7 +408,7 @@ exports.assignGiftItem = async (req, res) => {
     // Send notification to organizer
     try {
       await emailService.sendGiftReservationNotification(
-        event.creator.email,
+        event.userId.email,
         {
           eventName: event.name,
           guestName: guest.name,
@@ -506,7 +494,7 @@ exports.unassignGiftItem = async (req, res) => {
     // Send notification to organizer
     try {
       await emailService.sendGiftCancellationNotification(
-        event.creator.email,
+        event.userId.email,
         {
           eventName: event.name,
           guestName: guest.name,

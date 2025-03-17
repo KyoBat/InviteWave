@@ -6,14 +6,14 @@ const { auth } = require('../middlewares');
 const Joi = require('joi');
 const { validation } = require('../middlewares');
 const multer = require('multer');
-
+const path = require('path');
 // Validation schemas
 
 
 // Configuration de multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, path.join(__dirname, '../uploads'));
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);
@@ -98,8 +98,15 @@ router.post(
 router.post(
   '/',
   auth.auth,
-  upload.single('image'), // <-- Ajoutez multer ici
-  validation.validateBody(createGiftItemSchema),
+  upload.single('image'),
+  /*(req, res, next) => {
+    // Ne pas valider le corps si un fichier est téléchargé
+    if (req.file) {
+      next();
+    } else {
+      validation.validateBody(createGiftItemSchema)(req, res, next);
+    }
+  },*/
   giftItemController.createGiftItem
 );
 
@@ -115,8 +122,15 @@ router.put(
 router.put(
   '/:giftId',
   auth.auth,
-  upload.single('image'), // Accepte les requêtes avec ou sans fichier
-  validation.validateBody(updateGiftItemSchema),
+  upload.single('image'),
+  /*(req, res, next) => {
+    // Ne pas valider le corps si un fichier est téléchargé
+    if (req.file) {
+      next();
+    } else {
+      validation.validateBody(updateGiftItemSchema)(req, res, next);
+    }
+  },*/
   giftItemController.updateGiftItem
 );
 

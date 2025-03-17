@@ -129,6 +129,23 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
     fetchGiftData();
   };
 
+  const getCorrectImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Construire l'URL complète en évitant les doubles slashes
+    // Si imageUrl contient déjà la partie complète de l'URL
+    if (imageUrl.includes('http://') || imageUrl.includes('https://')) {
+      return imageUrl;
+    }
+    
+    // Supprimer tout préfixe /uploads/ existant et tout slash au début
+    const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
+    
+    // Construire l'URL complète
+    
+    return `${config.urlImage}/uploads/${cleanImageName}`;
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">Error: {error}</div>;
   if (!gift) return <div className="not-found">Gift not found</div>;
@@ -153,7 +170,7 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
   const isPartiallyReserved = status === 'partially';
   const isAvailable = status === 'available';
   const availableQuantity = quantity - quantityReserved;
-
+  
   return (
     <div className="gift-detail-container">
       <div className="gift-detail-header">
@@ -186,7 +203,7 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
         <div className="gift-detail-main">
           <div className="gift-image">
           {imageUrl ? (
-              <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
+              <img src={getCorrectImageUrl(imageUrl)} alt={name} />
             ) : (
               <div className="gift-no-image">
                 <FontAwesomeIcon icon={faGift} />

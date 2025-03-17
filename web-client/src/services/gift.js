@@ -59,12 +59,20 @@ export const getGiftById = async (eventId, giftId, params = {}) => {
   return api.post(url, giftData);
 };*/
 
-export const createGift = async (eventId, formData) => {
-  return api.post(`/events/${eventId}/gifts`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data', // Important pour les fichiers
-    },
-  });
+export const createGift = async (eventId, data) => {
+  const isFormData = data instanceof FormData;
+  
+  if (isFormData) {
+    console.log('Envoi FormData, contient image:', data.get('image'));
+    return api.post(`/events/${eventId}/gifts`, data, {
+      headers: {
+        // Ne PAS spécifier Content-Type ici, laissez axios le faire
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+  } else {
+    return api.post(`/events/${eventId}/gifts`, data);
+  }
 };
 /**
  * Update an existing gift item
@@ -77,14 +85,22 @@ export const createGift = async (eventId, formData) => {
   return api.put(`/events/${eventId}/gifts/${giftId}`, giftData);
 };*/
 
-export const updateGift = async (eventId, giftId, formData) => {
-  return api.put(`/events/${eventId}/gifts/${giftId}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data', // Important pour les fichiers
-    },
-  });
+export const updateGift = async (eventId, giftId, data) => {
+  // Vérifier si data est un FormData (pour les fichiers) ou un objet JSON
+  const isFormData = data instanceof FormData;
+  
+  if (isFormData) {
+    return api.put(`/events/${eventId}/gifts/${giftId}`, data, {
+      headers: {
+        // Ne pas spécifier Content-Type pour FormData
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+  } else {
+    // Pour les données JSON normales
+    return api.put(`/events/${eventId}/gifts/${giftId}`, data);
+  }
 };
-
 /**
  * Delete a gift item
  * @param {string} eventId - Event ID

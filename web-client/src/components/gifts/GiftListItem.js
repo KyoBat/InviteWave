@@ -100,15 +100,46 @@ const GiftListItem = ({
     }
   };
 
+  const imageUrlPath = imageUrl => {
+    // Éviter les chemins en double comme /uploads//uploads/...
+    if (imageUrl?.startsWith('/uploads/')) {
+      return `${config.urlImage}${imageUrl}`;
+    } else {
+      return `${config.urlImage}/uploads/${imageUrl}`;
+    }
+  };
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Supprimer les doubles slashes
+    return `${config.urlImage}/uploads/${imageUrl.replace(/^\/uploads\//, '')}`;
+  };
+
+  const getCorrectImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Construire l'URL complète en évitant les doubles slashes
+    // Si imageUrl contient déjà la partie complète de l'URL
+    if (imageUrl.includes('http://') || imageUrl.includes('https://')) {
+      return imageUrl;
+    }
+    
+    // Supprimer tout préfixe /uploads/ existant et tout slash au début
+    const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
+    
+    // Construire l'URL complète
+
+    return `${config.urlImage}/uploads/${cleanImageName}`;
+  };
   const renderGridView = () => {
     const isReserved = status === 'reserved';
     const isPartial = status === 'partially';
-    
     return (
       <div className={`gift-card ${isReserved ? 'reserved' : ''} ${isPartial ? 'partially-reserved' : ''}`}>
         <div className="gift-card-image">
           {imageUrl ? (
-            <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
+            
+            <img src={getCorrectImageUrl(imageUrl)} alt={name} />
           ) : (
             <div className="gift-card-no-image">
               <FontAwesomeIcon icon={faGift} />
@@ -187,7 +218,7 @@ const GiftListItem = ({
         <td>
           <div className="gift-thumbnail">
             {imageUrl ? (
-              <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
+              <img src={getCorrectImageUrl(imageUrl)} alt={name} />
             ) : (
               <div className="gift-thumbnail-placeholder">
                 <FontAwesomeIcon icon={faGift} />
@@ -252,7 +283,7 @@ const GiftListItem = ({
       <div className={`gift-public-card ${isReserved ? 'reserved' : ''}`}>
         <div className="gift-public-image">
           {imageUrl ? (
-            <img src={`${config.urlImage}/uploads${imageUrl}`} alt={name} />
+            <img src={getCorrectImageUrl(imageUrl)} alt={name} />
           ) : (
             <div className="gift-public-placeholder">
               <FontAwesomeIcon icon={faGift} />
@@ -306,7 +337,6 @@ const GiftListItem = ({
   if (isPublic) {
     return renderPublicView();
   }
-  
   return viewMode === 'grid' ? renderGridView() : renderListView();
 };
 

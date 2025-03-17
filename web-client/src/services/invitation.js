@@ -19,13 +19,22 @@ const invitationService = {
     const response = await api.post(`/api/events/${eventId}/invitations/send`, { invitationIds });
     return response.data;
   },
-  
+   // Renvoyer une invitation spécifique
+   resendInvitation: async (invitationId) => {
+    const response = await api.post(`/invitations/${invitationId}/resend`);
+    return response.data;
+  },
   // Get public invitation by code
   getInvitationByCode: async (code) => {
     const response = await api.get(`/api/invitations/${code}`);
     return response.data;
   },
   
+  // Obtenir les statistiques d'invitation pour un événement
+  getInvitationStats: async (eventId) => {
+    const response = await api.get(`/events/${eventId}/invitations/stats`);
+    return response.data;
+  },
   // Respond to invitation
   respondToInvitation: async (code, responseData) => {
     const response = await api.put(`/api/invitations/${code}/respond`, responseData);
