@@ -3,6 +3,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 
+const getCorrectImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  
+  // Si l'URL est déjà complète, la retourner directement
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // Sinon, nettoyer l'URL et construire le chemin complet
+  const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
+  return `${process.env.REACT_APP || 'http://localhost:5001'}/uploads/${cleanImageName}`;
+};
+
+
 const EventCard = ({ event }) => {
   // Format date and time
   const eventDate = new Date(event.date);
@@ -26,8 +40,8 @@ const EventCard = ({ event }) => {
   return (
     <div className={`event-card ${event.status === 'completed' ? 'event-completed' : ''}`}>
       <div className="event-card-cover">
-        {event.coverImage ? (
-          <img src={event.coverImage} alt={event.name} />
+      {event.coverImage ? (
+          <img src={getCorrectImageUrl(event.coverImage)} alt={event.name} />
         ) : (
           <div className="event-card-no-image">
             <span>{event.name.substring(0, 7).toUpperCase()}</span>

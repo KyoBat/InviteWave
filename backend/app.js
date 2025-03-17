@@ -44,8 +44,8 @@ app.use('/uploads', (req, res, next) => {
 //app.use('/uploads', express.static('uploads'));
 //app.use('/api/events', giftItemRoutes);
 // Augmenter la limite de taille du corps de la requête
-//app.use(bodyParser.json({ limit: '10mb' })); // Limite à 10 Mo
-//app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); // Limite à 10 Mo
+app.use(bodyParser.json({ limit: '10mb' })); // Limite à 10 Mo
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true })); // Limite à 10 Mo
 // API routes
 app.use('/api', routes);
 

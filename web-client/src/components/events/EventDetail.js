@@ -114,6 +114,18 @@ const EventDetail = () => {
     }
   };
   
+  const getCorrectImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Si l'URL est déjà complète, la retourner directement
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // Sinon, nettoyer l'URL et construire le chemin complet
+    const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
+    return `${process.env.REACT_APP || 'http://localhost:5001'}/uploads/${cleanImageName}`;
+  };
   // Filtrer les invitations selon les critères de recherche et de filtre
   const filteredInvitations = invitations.filter(invitation => {
     // Filtre de recherche
@@ -212,7 +224,7 @@ const EventDetail = () => {
             <div className="event-detail-main">
               <div className="event-cover">
                 {event.coverImage ? (
-                  <img src={event.coverImage} alt={event.name} />
+                  <img src={getCorrectImageUrl(event.coverImage)} alt={event.name} />
                 ) : (
                   <div className="event-no-image">
                     <span>{event.name.substring(0, 7).toUpperCase()}</span>
