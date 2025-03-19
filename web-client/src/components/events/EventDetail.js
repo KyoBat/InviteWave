@@ -1,12 +1,14 @@
 // src/components/events/EventDetail.js
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'; // Ajouter useLocation
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { eventService } from '../../services';
 import { invitationService } from '../../services';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import GiftManagement from '../gifts/GiftManagement';
+import QuickStats from './QuickStats';
+import '../../styles/QuickStats.css';
 
 const EventDetail = () => {
   const [event, setEvent] = useState(null);
@@ -26,10 +28,16 @@ const EventDetail = () => {
     pending: 0,
     responses: 0
   });
+
+  // État pour les statistiques des cadeaux
+  const [giftStats, setGiftStats] = useState({
+    total: 0,
+    reserved: 0
+  });
   
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // Ajouter cette ligne
+  const location = useLocation();
   
   useEffect(() => {
     const fetchEvent = async () => {
@@ -45,6 +53,9 @@ const EventDetail = () => {
     };
     
     fetchEvent();
+    // Charger les statistiques de base au démarrage
+    fetchInvitations();
+    fetchGiftStats();
   }, [id]);
   
   // Charger les invitations lorsque l'onglet est sélectionné
@@ -54,15 +65,22 @@ const EventDetail = () => {
       setTabIndex(2); // Sélectionner l'onglet Gifts (index 2)
       
       // Important: nettoyer l'état après avoir appliqué la redirection
-      // Cela évite que la redirection persiste après le premier rendu
       navigate(location.pathname, { replace: true, state: {} });
     }
-    
+  }, [location, navigate]);
+
+  // Effet pour charger les données en fonction de l'onglet sélectionné
+  useEffect(() => {
     // Si l'onglet Invitations est sélectionné, charger les invitations
     if (tabIndex === 1) {
       fetchInvitations();
     }
-  }, [location, navigate]);
+    
+    // Si l'onglet Gifts est sélectionné, charger les statistiques des cadeaux
+    if (tabIndex === 2) {
+      fetchGiftStats();
+    }
+  }, [tabIndex, id]);
   
   const fetchInvitations = async () => {
     try {
@@ -86,6 +104,30 @@ const EventDetail = () => {
       });
     } catch (error) {
       console.error('Error fetching invitations:', error);
+    }
+  };
+
+  // Fonction pour récupérer les statistiques des cadeaux
+  const fetchGiftStats = async () => {
+    try {
+      // Vous devrez adapter cette partie selon votre API
+      // Si vous n'avez pas d'endpoint spécifique, vous pouvez calculer à partir des données existantes
+      
+      // Exemple fictif - à remplacer par votre propre implémentation
+      // const response = await fetch(`/api/events/${id}/gifts/stats`);
+      // const data = await response.json();
+      
+      // Simulation de données pour l'exemple
+      // Dans un cas réel, vous récupéreriez ces données de votre API
+      setTimeout(() => {
+        setGiftStats({
+          total: 12, // Remplacer par le nombre réel de cadeaux
+          reserved: 5  // Remplacer par le nombre réel de cadeaux réservés
+        });
+      }, 300);
+      
+    } catch (error) {
+      console.error('Error fetching gift stats:', error);
     }
   };
   
@@ -300,22 +342,19 @@ const EventDetail = () => {
             </div>
             
             <div className="event-detail-sidebar">
-              <div className="invitation-actions">
-                <h3>Management</h3>
-                <button 
-                  className="button-primary" 
-                  onClick={() => setTabIndex(1)}
-                >
-                  Manage Guests & Invitations
-                </button>
-              </div>
+              {/* Intégration du composant QuickStats */}
+              <QuickStats 
+                eventId={id} 
+                stats={{
+                  totalGuests: stats.total,
+                  attending: stats.responses,
+                  notResponded: stats.pending,
+                  totalGifts: giftStats.total,
+                  reservedGifts: giftStats.reserved
+                }} 
+              />
               
-              <div className="quick-stats">
-                <h3>Quick Stats</h3>
-                <div className="stats-placeholder">
-                  <p>Visit the invitations page for detailed statistics</p>
-                </div>
-              </div>
+              
             </div>
           </div>
         </TabPanel>
@@ -474,9 +513,6 @@ const EventDetail = () => {
         </TabPanel>
         
         <TabPanel>
-          {/* <div className="event-detail-section">
-            <h2>Gift List</h2>
-          </div> */}
           <GiftManagement isOrganizer={isOrganizer} enableReordering={isOrganizer} eventId={id} />
         </TabPanel>
       </Tabs>
