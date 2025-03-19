@@ -121,8 +121,8 @@ const EventDetail = () => {
       // Dans un cas réel, vous récupéreriez ces données de votre API
       setTimeout(() => {
         setGiftStats({
-          total: 12, // Remplacer par le nombre réel de cadeaux
-          reserved: 5  // Remplacer par le nombre réel de cadeaux réservés
+          total: 0, // Remplacer par le nombre réel de cadeaux
+          reserved: 0  // Remplacer par le nombre réel de cadeaux réservés
         });
       }, 300);
       

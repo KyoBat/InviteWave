@@ -1,12 +1,14 @@
 // web-client/src/components/gifts/GiftListItem.js
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faGift, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faGift, faCheck, faStar } from '@fortawesome/free-solid-svg-icons';
 import { assignGift, unassignGift, deleteGift } from '../../services/gift';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import config from '../../config';
+import GiftAssignmentModal from './GiftAssignmentModal';
+
 const GiftListItem = ({ 
   gift, 
   isOrganizer, 
@@ -14,8 +16,11 @@ const GiftListItem = ({
   onAssign, 
   isPublic = false,
   viewMode = 'grid',
-  fetchGifts
+  fetchGifts,
+  dragHandleProps = {}
 }) => {
+  const [showModal, setShowModal] = useState(false);
+  
   const {
     _id: giftId,
     name,
@@ -100,26 +105,28 @@ const GiftListItem = ({
     }
   };
 
-  const imageUrlPath = imageUrl => {
-    // Éviter les chemins en double comme /uploads//uploads/...
-    if (imageUrl?.startsWith('/uploads/')) {
-      return `${config.urlImage}${imageUrl}`;
+  // Gestion de la modal (si onAssign n'est pas fourni)
+  const handleOpenModal = () => {
+    if (onAssign) {
+      onAssign(gift);
     } else {
-      return `${config.urlImage}/uploads/${imageUrl}`;
+      setShowModal(true);
     }
   };
-  const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return null;
-    
-    // Supprimer les doubles slashes
-    return `${config.urlImage}/uploads/${imageUrl.replace(/^\/uploads\//, '')}`;
+  
+  const handleCloseModal = () => setShowModal(false);
+  
+  const handleReservationComplete = () => {
+    setShowModal(false);
+    if (fetchGifts) {
+      fetchGifts();
+    }
   };
 
   const getCorrectImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     
-    // Construire l'URL complète en évitant les doubles slashes
-    // Si imageUrl contient déjà la partie complète de l'URL
+    // Si l'URL est déjà complète, la retourner directement
     if (imageUrl.includes('http://') || imageUrl.includes('https://')) {
       return imageUrl;
     }
@@ -128,21 +135,21 @@ const GiftListItem = ({
     const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
     
     // Construire l'URL complète
-
     return `${config.urlImage}/uploads/${cleanImageName}`;
   };
+
   const renderGridView = () => {
     const isReserved = status === 'reserved';
     const isPartial = status === 'partially';
+    
     return (
-      <div className={`gift-card ${isReserved ? 'reserved' : ''} ${isPartial ? 'partially-reserved' : ''}`}>
+      <div className={`gift-card ${isReserved ? 'reserved' : ''} ${isPartial ? 'partially-reserved' : ''}`} {...dragHandleProps}>
         <div className="gift-card-image">
           {imageUrl ? (
-            
-            <img src={getCorrectImageUrl(imageUrl)} alt={name} />
+            <img src={getCorrectImageUrl(imageUrl)} alt={name} className="gift-image" />
           ) : (
             <div className="gift-card-no-image">
-              <FontAwesomeIcon icon={faGift} />
+              <FontAwesomeIcon icon={faGift} size="2x" />
             </div>
           )}
           <div className={`gift-status-badge status-${status}`}>
@@ -151,10 +158,15 @@ const GiftListItem = ({
             {status === 'reserved' && 'Reserved'}
             {isReservedByCurrentGuest && <FontAwesomeIcon icon={faCheck} style={{ marginLeft: '5px' }} />}
           </div>
+          
+          {isEssential && (
+            <div className="gift-essential-tag">
+              <FontAwesomeIcon icon={faStar} /> ESSENTIAL
+            </div>
+          )}
         </div>
         <div className="gift-card-content">
-          <h3>
-            {isEssential && <span className="essential-tag">ESSENTIAL</span>}
+          <h3 className="gift-name">
             {name}
           </h3>
           <p className="gift-description">{description}</p>
@@ -181,11 +193,11 @@ const GiftListItem = ({
                   Already Reserved
                 </button>
               ) : isReservedByCurrentGuest ? (
-                <button className="unreserve-button" onClick={() => onAssign(gift)}>
+                <button className="unreserve-button" onClick={handleOpenModal}>
                   Modify My Reservation
                 </button>
               ) : (
-                <button className="reserve-button" onClick={() => onAssign(gift)}>
+                <button className="reserve-button" onClick={handleOpenModal}>
                   I'll Bring It
                 </button>
               )
@@ -193,12 +205,12 @@ const GiftListItem = ({
               <>
                 <Link to={`/events/${eventId}/gifts/${giftId}`} className="view-button">View</Link>
                 {!isReserved && !isReservedByCurrentGuest && (
-                  <button className="reserve-button" onClick={quantity === 1 ? handleQuickAssign : () => onAssign(gift)}>
+                  <button className="reserve-button" onClick={quantity === 1 ? handleQuickAssign : handleOpenModal}>
                     Reserve
                   </button>
                 )}
                 {isReservedByCurrentGuest && (
-                  <button className="unreserve-button" onClick={() => onAssign(gift)}>
+                  <button className="unreserve-button" onClick={handleOpenModal}>
                     Modify
                   </button>
                 )}
@@ -227,7 +239,7 @@ const GiftListItem = ({
           </div>
         </td>
         <td>
-          {isEssential && <span className="essential-tag">ESSENTIAL</span>}
+          {isEssential && <span className="essential-tag"><FontAwesomeIcon icon={faStar} /> ESSENTIAL</span>}
           <span className="gift-name">{name}</span>
         </td>
         <td>
@@ -259,13 +271,21 @@ const GiftListItem = ({
                 <Link to={`/events/${eventId}/gifts/${giftId}`} className="action-button view-button">
                   View
                 </Link>
-                {!gift.isReserved && (
+                {status !== 'reserved' && !isReservedByCurrentGuest && (
                   <button 
                     className="action-button reserve-button"
                     onClick={handleQuickAssign}
                     disabled={status === 'reserved'}
                   >
                     Reserve
+                  </button>
+                )}
+                {isReservedByCurrentGuest && (
+                  <button 
+                    className="action-button modify-button"
+                    onClick={handleOpenModal}
+                  >
+                    <FontAwesomeIcon icon={faCheck} />
                   </button>
                 )}
               </>
@@ -283,20 +303,29 @@ const GiftListItem = ({
       <div className={`gift-public-card ${isReserved ? 'reserved' : ''}`}>
         <div className="gift-public-image">
           {imageUrl ? (
-            <img src={getCorrectImageUrl(imageUrl)} alt={name} />
+            <img src={getCorrectImageUrl(imageUrl)} alt={name} className="gift-image" />
           ) : (
             <div className="gift-public-placeholder">
-              <FontAwesomeIcon icon={faGift} />
+              <FontAwesomeIcon icon={faGift} size="2x" />
             </div>
           )}
+          
           {isReservedByCurrentGuest && (
             <div className="gift-status-badge status-available">
               You're bringing this <FontAwesomeIcon icon={faCheck} />
             </div>
           )}
+          
+          {isEssential && (
+            <div className="gift-essential-tag">
+              <FontAwesomeIcon icon={faStar} /> ESSENTIAL
+            </div>
+          )}
         </div>
+        
         <div className="gift-public-content">
-          <h4>{name}</h4>
+          <h4 className="gift-name">{name}</h4>
+          
           <div className="gift-public-progress">
             <div className="gift-public-progress-bar">
               <div 
@@ -306,6 +335,7 @@ const GiftListItem = ({
             </div>
             <div className="gift-public-progress-text">{quantityReserved}/{quantity}</div>
           </div>
+          
           <div className="gift-public-actions">
             {isReserved && !isReservedByCurrentGuest ? (
               <button className="gift-public-button" disabled style={{ backgroundColor: '#e0e0e0', color: '#666' }}>
@@ -314,7 +344,7 @@ const GiftListItem = ({
             ) : isReservedByCurrentGuest ? (
               <button 
                 className="gift-public-button" 
-                onClick={() => onAssign(gift)}
+                onClick={handleOpenModal}
                 style={{ backgroundColor: '#f44336', color: 'white' }}
               >
                 Modify
@@ -322,7 +352,7 @@ const GiftListItem = ({
             ) : (
               <button 
                 className="gift-public-button" 
-                onClick={() => onAssign(gift)}
+                onClick={handleOpenModal}
                 style={{ backgroundColor: '#4caf50', color: 'white' }}
               >
                 I'll Bring It
@@ -334,10 +364,30 @@ const GiftListItem = ({
     );
   };
 
+  // Rendu conditionnel selon le mode d'affichage
+  let renderedContent;
   if (isPublic) {
-    return renderPublicView();
+    renderedContent = renderPublicView();
+  } else {
+    renderedContent = viewMode === 'grid' ? renderGridView() : renderListView();
   }
-  return viewMode === 'grid' ? renderGridView() : renderListView();
+
+  // Ajout de la modal de réservation si nécessaire (seulement si onAssign n'est pas fourni)
+  return (
+    <>
+      {renderedContent}
+      
+      {showModal && !onAssign && (
+        <GiftAssignmentModal
+          gift={gift}
+          eventId={eventId}
+          guestId={guestId}
+          onClose={handleCloseModal}
+          onComplete={handleReservationComplete}
+        />
+      )}
+    </>
+  );
 };
 
 export default GiftListItem;
