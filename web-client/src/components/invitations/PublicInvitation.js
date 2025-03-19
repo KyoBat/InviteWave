@@ -37,7 +37,7 @@ const PublicInvitation = () => {
         const data = await invitationService.getInvitationByCode(code);
         setInvitation(data.invitation);
         
-        // Pré-remplir la réponse si déjà répondu
+        // Pre-fill response if already responded
         if (data.invitation.response && data.invitation.response.status !== 'pending') {
           setResponse(data.invitation.response.status);
           setMessage(data.invitation.response.message || '');
@@ -45,12 +45,12 @@ const PublicInvitation = () => {
           setSubmitSuccess(true);
         }
         
-        // Récupérer l'ID de l'invité
+        // Retrieve guest ID
         if (data.invitation.guest && data.invitation.guest._id) {
           setGuestId(data.invitation.guest._id);
         }
         
-        // Récupérer l'ID de l'événement
+        // Retrieve event ID
         const event = data.invitation.event;
         if (event) {
           const possibleId = event._id || event.id || event.eventId;
@@ -58,13 +58,13 @@ const PublicInvitation = () => {
           if (possibleId) {
             setEventId(possibleId);
           } else if (event.name) {
-            // Fallback temporaire si pas d'ID
+            // Temporary fallback if no ID
             setEventId(event.name);
           }
         }
       } catch (error) {
-        setError('Invitation introuvable ou expirée');
-        console.error('Erreur lors de la récupération de l\'invitation:', error);
+        setError('Invitation not found or has expired');
+        console.error('Error retrieving invitation:', error);
       } finally {
         setLoading(false);
       }
@@ -85,7 +85,7 @@ const PublicInvitation = () => {
     e.preventDefault();
     
     if (!response) {
-      setError('Veuillez sélectionner une réponse');
+      setError('Please select a response');
       return;
     }
     
@@ -94,7 +94,7 @@ const PublicInvitation = () => {
     
     try {
       if (!code) {
-        throw new Error('Code d\'invitation manquant');
+        throw new Error('Invitation code is missing');
       }
       
       await invitationService.respondToInvitation(code, {
@@ -105,8 +105,8 @@ const PublicInvitation = () => {
       setSubmitted(true);
       setSubmitSuccess(true);
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de la réponse:', error);
-      setError(error.displayMessage || 'Échec de l\'envoi de la réponse');
+      console.error('Error submitting response:', error);
+      setError(error.displayMessage || 'Failed to submit response');
       setSubmitSuccess(false);
     } finally {
       setLoading(false);
@@ -118,7 +118,7 @@ const PublicInvitation = () => {
     return (
       <div className="loading-invitation">
         <FontAwesomeIcon icon={faSpinner} spin size="2x" />
-        <span>Chargement de l'invitation...</span>
+        <span>Loading invitation...</span>
       </div>
     );
   }
@@ -127,7 +127,7 @@ const PublicInvitation = () => {
     return (
       <div className="invitation-error-container">
         <div className="invitation-error">
-          <h2>Oups !</h2>
+          <h2>Oops!</h2>
           <p>{error}</p>
           <div className="error-illustration"></div>
         </div>
@@ -138,30 +138,30 @@ const PublicInvitation = () => {
   if (!invitation) {
     return (
       <div className="invitation-not-found">
-        <h2>Invitation introuvable</h2>
-        <p>L'invitation que vous recherchez a peut-être été supprimée ou n'est plus disponible.</p>
+        <h2>Invitation Not Found</h2>
+        <p>The invitation you're looking for might have been removed or is no longer available.</p>
       </div>
     );
   }
 
-  // Formater la date et l'heure de l'événement
+  // Format event date and time
   const eventDate = new Date(invitation.event.date);
-  const formattedDate = format(eventDate, 'EEEE, d MMMM yyyy');
-  const formattedTime = format(eventDate, 'HH:mm');
+  const formattedDate = format(eventDate, 'EEEE, MMMM d, yyyy');
+  const formattedTime = format(eventDate, 'h:mm a');
 
-  // Déterminer si l'invité a confirmé sa présence
+  // Determine if guest has confirmed attendance
   const isConfirmed = submitted && response === 'yes';
 
-  // Fonction pour obtenir l'URL correcte de l'image
+  // Function to get correct image URL
   const getCorrectImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     
-    // Si l'URL est déjà complète, la retourner directement
+    // If URL is already complete, return it directly
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return imageUrl;
     }
     
-    // Sinon, nettoyer l'URL et construire le chemin complet
+    // Otherwise, clean the URL and build the complete path
     const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
     return `${process.env.REACT_APP || 'http://localhost:5001'}/uploads/${cleanImageName}`;
   };
@@ -170,7 +170,7 @@ const PublicInvitation = () => {
     <div className="public-invitation-container">
       <div className="invitation-card">
         <div className="invitation-header">
-          <h1>Vous êtes invité !</h1>
+          <h1>You're Invited!</h1>
           <h2>{invitation.event.name}</h2>
         </div>
         
@@ -191,7 +191,7 @@ const PublicInvitation = () => {
           </div>
             
             <div className="event-info">
-              <p className="invitation-message">{invitation.message || `Vous êtes cordialement invité à ${invitation.event.name}`}</p>
+              <p className="invitation-message">{invitation.message || `You are cordially invited to ${invitation.event.name}`}</p>
               
               <div className="info-item">
                 <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
@@ -205,7 +205,7 @@ const PublicInvitation = () => {
               
               <div className="info-item">
                 <FontAwesomeIcon icon={faMapMarkerAlt} className="info-icon" />
-                <span>{invitation.event.location?.address || 'Adresse non spécifiée'}</span>
+                <span>{invitation.event.location?.address || 'Address not specified'}</span>
               </div>
               
               {invitation.event.description && (
@@ -218,7 +218,7 @@ const PublicInvitation = () => {
           
           {!submitted ? (
             <div className="response-form-container">
-              <h3>Serez-vous présent ?</h3>
+              <h3>Will you be attending?</h3>
               
               {error && <div className="error-message">{error}</div>}
               
@@ -233,7 +233,7 @@ const PublicInvitation = () => {
                       onChange={handleResponseChange}
                     />
                     <FontAwesomeIcon icon={faCheck} className="response-icon yes-icon" />
-                    <span className="option-label">Oui, je serai présent(e) !</span>
+                    <span className="option-label">Yes, I'll be there!</span>
                   </label>
                   
                   <label className={`response-option ${response === 'no' ? 'selected' : ''}`}>
@@ -245,7 +245,7 @@ const PublicInvitation = () => {
                       onChange={handleResponseChange}
                     />
                     <FontAwesomeIcon icon={faTimes} className="response-icon no-icon" />
-                    <span className="option-label">Non, je ne pourrai pas venir</span>
+                    <span className="option-label">No, I can't make it</span>
                   </label>
                   
                   <label className={`response-option ${response === 'maybe' ? 'selected' : ''}`}>
@@ -257,18 +257,18 @@ const PublicInvitation = () => {
                       onChange={handleResponseChange}
                     />
                     <FontAwesomeIcon icon={faQuestionCircle} className="response-icon maybe-icon" />
-                    <span className="option-label">Peut-être, je ne suis pas sûr(e)</span>
+                    <span className="option-label">Maybe, I'm not sure yet</span>
                   </label>
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="message">Message (optionnel)</label>
+                  <label htmlFor="message">Message (optional)</label>
                   <textarea
                     id="message"
                     name="message"
                     value={message}
                     onChange={handleMessageChange}
-                    placeholder="Ajoutez un message personnel..."
+                    placeholder="Add a personal message..."
                     rows="3"
                   />
                 </div>
@@ -276,10 +276,10 @@ const PublicInvitation = () => {
                 <button type="submit" className="submit-button" disabled={!response || loading}>
                   {loading ? (
                     <>
-                      <FontAwesomeIcon icon={faSpinner} spin /> Envoi en cours...
+                      <FontAwesomeIcon icon={faSpinner} spin /> Submitting...
                     </>
                   ) : (
-                    'Envoyer ma réponse'
+                    'Submit Response'
                   )}
                 </button>
               </form>
@@ -288,49 +288,49 @@ const PublicInvitation = () => {
             <div className="response-confirmation">
               {submitSuccess ? (
                 <>
-                  <h3>Merci pour votre réponse !</h3>
+                  <h3>Thank you for your response!</h3>
                   <div className="response-summary">
-                    <p>Vous avez répondu : <strong>
-                      {response === 'yes' ? 'Présent(e)' : 
-                       response === 'no' ? 'Absent(e)' : 
-                       'Peut-être'}
+                    <p>You've responded: <strong>
+                      {response === 'yes' ? 'Attending' : 
+                       response === 'no' ? 'Not attending' : 
+                       'Maybe attending'}
                     </strong></p>
                     {message && (
                       <div className="response-message">
-                        <p>Votre message :</p>
+                        <p>Your message:</p>
                         <blockquote>{message}</blockquote>
                       </div>
                     )}
                   </div>
-                  <p className="host-notification">L'hôte a été notifié de votre réponse.</p>
+                  <p className="host-notification">The host has been notified of your response.</p>
                 </>
               ) : (
                 <>
-                  <h3>Une erreur est survenue</h3>
-                  <p>Nous n'avons pas pu enregistrer votre réponse. Veuillez réessayer ultérieurement.</p>
+                  <h3>Something went wrong</h3>
+                  <p>We couldn't record your response. Please try again later.</p>
                   <button 
                     className="try-again-button"
                     onClick={() => setSubmitted(false)}
                   >
-                    Réessayer
+                    Try Again
                   </button>
                 </>
               )}
             </div>
           )}
           
-          {/* Section liste de cadeaux */}
+          {/* Gift list section */}
           {isConfirmed && (
             <div className="invitation-section gift-public-list">
               <div className="invitation-section-header">
                 <h3>
                   <FontAwesomeIcon icon={faGift} className="section-icon" />
-                  Liste de cadeaux
+                  Gift Registry
                 </h3>
-                <p>Si vous souhaitez nous offrir un cadeau, voici quelques idées.</p>
+                <p>If you would like to bring a gift, here are some ideas.</p>
               </div>
               
-              {/* Affichage de la liste de cadeaux */}
+              {/* Display gift list */}
               {(eventId || invitation?.event) ? (
                 <GiftList 
                   providedEventId={eventId} 
@@ -341,7 +341,7 @@ const PublicInvitation = () => {
               ) : (
                 <div className="loading-message">
                   <FontAwesomeIcon icon={faSpinner} spin /> 
-                  Chargement de la liste de cadeaux...
+                  Loading gift registry...
                 </div>
               )}
             </div>
@@ -349,8 +349,8 @@ const PublicInvitation = () => {
         </div>
         
         <div className="invitation-footer">
-          <p>Envoyé à {invitation.guest.name}</p>
-          <p className="powered-by">Propulsé par Event Planner App</p>
+          <p>Sent to {invitation.guest.name}</p>
+          <p className="powered-by">Powered by Event Planner App</p>
         </div>
       </div>
     </div>
