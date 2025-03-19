@@ -10,13 +10,16 @@ import {
   faArrowLeft, 
   faCheckCircle, 
   faTimesCircle,
-  faCalendarAlt
+  faCalendarAlt,
+  faInfoCircle,
+  faUser,
+  faShoppingCart
 } from '@fortawesome/free-solid-svg-icons';
 import GiftAssignmentModal from './GiftAssignmentModal';
 import { formatDate } from '../../utils/dateUtils';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import config from '../../config'; // Chemin relatif à vérifier
+import config from '../../config';
 
 const GiftDetail = ({ guestId, isOrganizer = false }) => {
   const { eventId, giftId } = useParams();
@@ -64,7 +67,10 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
             try {
               const response = await deleteGift(eventId, giftId);
               if (response.data && response.data.success) {
-                navigate(`/events/${eventId}/gifts`);
+                navigate(`/events/${eventId}`, { 
+                  replace: true,
+                  state: { activeTab: 2 } // Index de l'onglet Gifts
+                });
               } else {
                 setError('Error deleting gift');
               }
@@ -132,17 +138,11 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
   const getCorrectImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     
-    // Construire l'URL complète en évitant les doubles slashes
-    // Si imageUrl contient déjà la partie complète de l'URL
     if (imageUrl.includes('http://') || imageUrl.includes('https://')) {
       return imageUrl;
     }
     
-    // Supprimer tout préfixe /uploads/ existant et tout slash au début
     const cleanImageName = imageUrl.replace(/^\/?(uploads\/)?/, '');
-    
-    // Construire l'URL complète
-    
     return `${config.urlImage}/uploads/${cleanImageName}`;
   };
 
@@ -174,16 +174,17 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
   return (
     <div className="gift-detail-container">
       <div className="gift-detail-header">
-        <h2>
-          {isEssential && <span className="essential-tag">ESSENTIAL</span>}
-          {name}
-        </h2>
-        
-        <div className="gift-actions">
-          <Link to={`/events/${eventId}/gifts`} className="back-button">
+        <div className="gift-header-left">
+          <Link to={`/events/${eventId}`} className="back-button" state={{ activeTab: 2 }}>
             <FontAwesomeIcon icon={faArrowLeft} /> Back to list
           </Link>
-          
+          <h2>
+            {isEssential && <span className="essential-tag">ESSENTIAL</span>}
+            {name}
+          </h2>
+        </div>
+        
+        <div className="gift-actions">
           {isOrganizer && (
             <>
               <Link to={`/events/${eventId}/gifts/${giftId}/edit`} className="edit-button">
@@ -201,38 +202,100 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
       
       <div className="gift-detail-content">
         <div className="gift-detail-main">
-          <div className="gift-image">
-          {imageUrl ? (
-              <img src={getCorrectImageUrl(imageUrl)} alt={name} />
-            ) : (
-              <div className="gift-no-image">
-                <FontAwesomeIcon icon={faGift} />
+          <div className="gift-info-card">
+            <div className="gift-detail-columns">
+              <div className="gift-detail-column gift-image-column">
+                {imageUrl ? (
+                  <img src={getCorrectImageUrl(imageUrl)} alt={name} className="gift-detail-image" />
+                ) : (
+                  <div className="gift-no-image">
+                    <FontAwesomeIcon icon={faGift} />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          
-          <div className="gift-info">
-            <h3>Description</h3>
-            <p>{description || 'No description available.'}</p>
-          </div>
-          
-          <div className="gift-quantity-detail">
-            <h4>Reservation Progress</h4>
-            <div className="quantity-progress">
-              <div 
-                className="quantity-progress-bar" 
-                style={{ width: `${reservationPercentage}%` }}
-              ></div>
-            </div>
-            <div className="quantity-text">
-              <span>{quantityReserved} reserved out of {quantity} needed</span>
-              <span>{availableQuantity} available</span>
+              
+              <div className="gift-detail-column gift-info-column">
+                <div className="gift-info-section">
+                  <h3><FontAwesomeIcon icon={faInfoCircle} className="section-icon" /> Description</h3>
+                  <p className="gift-description">{description || 'No description available.'}</p>
+                </div>
+                
+                <div className="gift-info-section">
+                  <h3><FontAwesomeIcon icon={faShoppingCart} className="section-icon" /> Reservation Status</h3>
+                  <div className="gift-status-badge status-badge-{status}">
+                    {status === 'available' && 'Available'}
+                    {status === 'partially' && 'Partially Reserved'}
+                    {status === 'reserved' && 'Fully Reserved'}
+                  </div>
+                  
+                  <div className="gift-quantity-detail">
+                    <div className="quantity-bar-wrapper">
+                      <div className="quantity-label">
+                        <span>{quantityReserved} of {quantity} reserved</span>
+                        <span>{availableQuantity} available</span>
+                      </div>
+                      <div className="quantity-progress">
+                        <div 
+                          className="quantity-progress-bar" 
+                          style={{ width: `${reservationPercentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {(!isOrganizer && guestId) && (
+                  <div className="gift-info-section reservation-actions">
+                    <h3><FontAwesomeIcon icon={faCheckCircle} className="section-icon" /> Your Reservation</h3>
+                    {isReserved && !isReservedByCurrentGuest ? (
+                      <div className="unavailable-message">
+                        <FontAwesomeIcon icon={faTimesCircle} size="2x" style={{ color: '#f44336' }} />
+                        <p>This gift is already fully reserved.</p>
+                      </div>
+                    ) : isReservedByCurrentGuest ? (
+                      <div className="reserve-form">
+                        <p>
+                          <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#4caf50', marginRight: '8px' }} />
+                          You have reserved this gift.
+                        </p>
+                        {currentGuestReservation && (
+                          <p>Quantity: {currentGuestReservation.quantity}</p>
+                        )}
+                        <button 
+                          className="full-width-button unreserve-button-large"
+                          onClick={() => setShowAssignModal(true)}
+                        >
+                          Modify my reservation
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="reserve-form">
+                        {quantity === 1 ? (
+                          <button 
+                            className="full-width-button reserve-button-large"
+                            onClick={handleQuickAssign}
+                          >
+                            I'll bring it
+                          </button>
+                        ) : (
+                          <button 
+                            className="full-width-button reserve-button-large"
+                            onClick={() => setShowAssignModal(true)}
+                          >
+                            I'll bring it
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
           {(isOrganizer || reservations.length > 0) && (
-            <div className="reserved-by">
-              <h3>Reserved by:</h3>
+            <div className="gift-reservations-card">
+              <h3><FontAwesomeIcon icon={faUser} className="section-icon" /> Reservations</h3>
               {reservations.length === 0 ? (
                 <p className="no-reservations">No reservations yet</p>
               ) : (
@@ -249,17 +312,13 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                   {reservations.map((reservation, index) => (
                     <tr key={index}>
                       <td>
-                        {/* Gestion plus robuste du nom de l'invité */}
                         {(() => {
-                          // Si l'organisateur voit l'information et que guestId est un objet avec un nom
                           if (isOrganizer && reservation.guestId && typeof reservation.guestId === 'object' && reservation.guestId.name) {
                             return reservation.guestId.name;
                           }
-                          // Sinon, utiliser guestName ou un nom générique
                           return reservation.guestName || 'A guest';
                         })()}
                         
-                        {/* Marquer l'invité actuel */}
                         {guestId && reservation.guestId && 
                         ((typeof reservation.guestId === 'object' && reservation.guestId._id === guestId) ||
                           (typeof reservation.guestId === 'string' && reservation.guestId === guestId)) && (
@@ -268,7 +327,6 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                       </td>
                       <td>{reservation.quantity || 1}</td>
                       <td>
-                        {/* Afficher le message ou "No message" */}
                         {reservation.message ? (
                           <span className="reservation-message">{reservation.message}</span>
                         ) : (
@@ -276,7 +334,6 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
                         )}
                       </td>
                       <td>
-                        {/* Formater la date ou afficher "Unknown date" */}
                         {reservation.createdAt ? (
                           formatDate(reservation.createdAt)
                         ) : (
@@ -294,90 +351,51 @@ const GiftDetail = ({ guestId, isOrganizer = false }) => {
         
         <div className="gift-detail-sidebar">
           <div className="action-panel">
-            <h3>Information</h3>
-            <div className="gift-status-info">
-              <p>
-                <strong>Status:</strong> 
-                <span className={`status-${status}`}>
+            <h3>Details</h3>
+            <div className="gift-details-list">
+              <div className="detail-item">
+                <span className="detail-label">Status:</span>
+                <span className={`detail-value status-${status}`}>
                   {status === 'available' && 'Available'}
                   {status === 'partially' && 'Partially Reserved'}
                   {status === 'reserved' && 'Fully Reserved'}
                 </span>
-              </p>
-              <p>
-                <strong>Quantity:</strong> {quantity}
-              </p>
-              <p>
-                <strong>Reserved:</strong> {quantityReserved}
-              </p>
-              <p>
-                <strong>Available:</strong> {availableQuantity}
-              </p>
-              <p>
-                <strong>Essential:</strong> {isEssential ? 'Yes' : 'No'}
-              </p>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Quantity:</span>
+                <span className="detail-value">{quantity}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Reserved:</span>
+                <span className="detail-value">{quantityReserved}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Available:</span>
+                <span className="detail-value">{availableQuantity}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Priority:</span>
+                <span className="detail-value">{isEssential ? 'Essential' : 'Standard'}</span>
+              </div>
+              
               {isOrganizer && (
                 <>
-                  <p>
-                    <strong>Created:</strong> {formatDate(createdAt)}
-                  </p>
-                  <p>
-                    <strong>Last updated:</strong> {formatDate(updatedAt)}
-                  </p>
+                  <div className="detail-item">
+                    <span className="detail-label">Created:</span>
+                    <span className="detail-value">{formatDate(createdAt)}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Last updated:</span>
+                    <span className="detail-value">{formatDate(updatedAt)}</span>
+                  </div>
                 </>
               )}
             </div>
           </div>
-          
-          {!isOrganizer && guestId && (
-            <div className="action-panel">
-              <h3>Reservation</h3>
-              {isReserved && !isReservedByCurrentGuest ? (
-                <div className="unavailable-message">
-                  <FontAwesomeIcon icon={faTimesCircle} size="2x" style={{ color: '#f44336' }} />
-                  <p>This gift is already fully reserved.</p>
-                </div>
-              ) : isReservedByCurrentGuest ? (
-                <div className="reserve-form">
-                  <p>
-                    <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#4caf50', marginRight: '8px' }} />
-                    You have reserved this gift.
-                  </p>
-                  {currentGuestReservation && (
-                    <p>Quantity: {currentGuestReservation.quantity}</p>
-                  )}
-                  <button 
-                    className="full-width-button unreserve-button-large"
-                    onClick={() => setShowAssignModal(true)}
-                  >
-                    Modify my reservation
-                  </button>
-                </div>
-              ) : (
-                <div className="reserve-form">
-                  {quantity === 1 ? (
-                    <button 
-                      className="full-width-button reserve-button-large"
-                      onClick={handleQuickAssign}
-                    >
-                      I'll bring it
-                    </button>
-                  ) : (
-                    <button 
-                      className="full-width-button reserve-button-large"
-                      onClick={() => setShowAssignModal(true)}
-                    >
-                      I'll bring it
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
       
-      {showAssignModal && (
+      {showAssignModal && gift && (
         <GiftAssignmentModal
           gift={gift}
           eventId={eventId}

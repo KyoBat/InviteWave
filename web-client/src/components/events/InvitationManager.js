@@ -1,7 +1,7 @@
 // src/components/events/InvitationManager.js
 import React, { useState, useEffect } from 'react';
 import { invitationService, guestService } from '../../services';
-import '../../styles/EventTabs.css'
+import '../../styles/events.css'
 
 const InvitationManager = ({ eventId }) => {
   const [invitations, setInvitations] = useState([]);

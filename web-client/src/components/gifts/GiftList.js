@@ -1,16 +1,15 @@
-// web-client/src/components/gifts/GiftList.js
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getGiftItems } from '../../services/gift';
 import GiftListItem from './GiftListItem';
 import GiftAssignmentModal from './GiftAssignmentModal';
-import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faThLarge, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faList, faThLarge, faPlus, faSort } from '@fortawesome/free-solid-svg-icons';
 
-const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null, isPublic = false }) => {
+const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null, isPublic = false, onReorderClick }) => {
   const { eventId: urlEventId } = useParams();
   const effectiveEventId = providedEventId || urlEventId;
+  const navigate = useNavigate();
 
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +19,14 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
   const [selectedGift, setSelectedGift] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [myReservations, setMyReservations] = useState([]);
+  const [filteredGifts, setFilteredGifts] = useState([]);
+  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
+
+  // Fonction pour appliquer le filtre
+  const applyFilter = (gifts, filter) => {
+    if (!filter) return gifts;
+    return gifts.filter(gift => gift.status === filter);
+  };
 
   // Define fetchGifts outside useEffect to reuse it
   const fetchGifts = async () => {
@@ -42,12 +49,14 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
       if (isPublic) {
         console.log('Public mode detected, showing placeholder message instead of error');
         setGifts([]);
+        setFilteredGifts([]);
         setError('La liste de cadeaux n\'est pas disponible pour le moment.');
       } else {
         setError('Missing event ID');
       }
       
       setLoading(false);
+      setInitialLoadAttempted(true);
       return;
     }
   
@@ -59,12 +68,16 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
       
       // Vérifier la structure de la réponse
       if (response && response.data && Array.isArray(response.data.data)) {
-        setGifts(response.data.data);
+        const giftsData = response.data.data;
+        setGifts(giftsData);
+        
+        // Appliquer le filtre immédiatement
+        setFilteredGifts(applyFilter(giftsData, statusFilter));
         
         // Extract current guest's reservations
-        if (guestId && response.data.data.length > 0) {
+        if (guestId && giftsData.length > 0) {
           console.log('Processing reservations for guest:', guestId);
-          const reservations = response.data.data
+          const reservations = giftsData
             .filter(gift => gift.isReservedByCurrentGuest)
             .map(gift => ({
               giftId: gift._id,
@@ -74,36 +87,50 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
           console.log('Extracted reservations:', reservations);
           setMyReservations(reservations);
         }
+        setError(null);
       } else {
         // Si la structure n'est pas comme attendue, gérer proprement
         console.warn('Unexpected API response structure:', response);
         setGifts([]);
+        setFilteredGifts([]);
         if (isPublic) {
           setError('Aucun cadeau n\'est disponible pour le moment.');
         } else {
-          setError('Unexpected API response format');
+          // Ne pas considérer une liste vide comme une erreur
+          setError(null);
         }
       }
-  
-      setError(null);
     } catch (err) {
       console.error('Error retrieving gifts:', err);
       
-      // Message d'erreur plus convivial en mode public
-      if (isPublic) {
-        setError('La liste de cadeaux n\'est pas disponible pour le moment.');
+      // Ne pas afficher d'erreur pour une liste vide
+      if (err.response && err.response.status === 404) {
+        setGifts([]);
+        setFilteredGifts([]);
+        setError(null);
       } else {
-        setError('Error retrieving gifts: ' + (err.message || 'Unknown error'));
+        // Message d'erreur plus convivial en mode public
+        if (isPublic) {
+          setError('La liste de cadeaux n\'est pas disponible pour le moment.');
+        } else {
+          setError('Error retrieving gifts: ' + (err.message || 'Unknown error'));
+        }
       }
     } finally {
       setLoading(false);
+      setInitialLoadAttempted(true);
     }
   };
 
-  // Use fetchGifts in useEffect
+  // Charger les cadeaux au montage du composant
   useEffect(() => {
     fetchGifts();
-  }, [effectiveEventId, guestId, statusFilter]);
+  }, [effectiveEventId, guestId]);
+
+  // Appliquer le filtre quand statusFilter change
+  useEffect(() => {
+    setFilteredGifts(applyFilter(gifts, statusFilter));
+  }, [statusFilter, gifts]);
 
   const handleAssign = (gift) => {
     setSelectedGift(gift);
@@ -116,15 +143,29 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
     fetchGifts();
   };
 
+  const handleAddGift = () => {
+    // Use navigate to ensure proper routing context is maintained
+    navigate(`/events/${effectiveEventId}/gifts/create`, {
+      state: { returnToEvent: true }
+    });
+  };
+
+  const handleReorderClick = () => {
+    if (onReorderClick && typeof onReorderClick === 'function') {
+      onReorderClick();
+    }
+  };
+
   const renderGiftGrid = () => {
-    if (gifts.length === 0) {
+    if (filteredGifts.length === 0) {
       return (
         <div className="no-gifts">
-          <p>No gifts are available at this time.</p>
+          <p>No gifts found matching the current filter.</p>
           {isOrganizer && (
-            <Link to={`/events/${effectiveEventId}/gifts/create`} className="create-link">
+            <button onClick={handleAddGift} className="create-link">
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: '6px' }} />
               Add a gift
-            </Link>
+            </button>
           )}
         </div>
       );
@@ -132,7 +173,7 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
 
     return (
       <div className="gifts-grid">
-        {gifts.map(gift => (
+        {filteredGifts.map(gift => (
           <GiftListItem
             key={gift._id}
             gift={gift}
@@ -149,14 +190,15 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
   };
 
   const renderGiftTable = () => {
-    if (gifts.length === 0) {
+    if (filteredGifts.length === 0) {
       return (
         <div className="no-gifts">
-          <p>No gifts are available at this time.</p>
+          <p>No gifts found matching the current filter.</p>
           {isOrganizer && (
-            <Link to={`/events/${effectiveEventId}/gifts/create`} className="create-link">
+            <button onClick={handleAddGift} className="create-link">
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: '6px' }} />
               Add a gift
-            </Link>
+            </button>
           )}
         </div>
       );
@@ -176,7 +218,7 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
             </tr>
           </thead>
           <tbody>
-            {gifts.map(gift => (
+            {filteredGifts.map(gift => (
               <GiftListItem
                 key={gift._id}
                 gift={gift}
@@ -225,23 +267,105 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
     );
   };
 
-  if (loading) return <div className="loading">Loading gift list...</div>;
+  // Afficher un état de chargement uniquement lors du chargement initial
+  if (loading && !initialLoadAttempted) return <div className="loading">Loading gift list...</div>;
+  
+  // Afficher les erreurs seulement si ce n'est pas lié à une liste vide
   if (error) return <div className="error-message">Error: {error}</div>;
+
+  // S'il n'y a pas de cadeaux et que la liste a été chargée avec succès
+  if (gifts.length === 0 && initialLoadAttempted && !error) {
+    return (
+      <div className="gift-list-container">
+        {/* Affichage des boutons d'action sans titre */}
+        {!isPublic && isOrganizer && (
+          <div className="gift-actions-bar" style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            marginBottom: '20px' 
+          }}>
+            <button 
+              onClick={handleAddGift} 
+              className="gift-action-button add-gift-button"
+              style={{
+                backgroundColor: '#5c6bc0',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                border: 'none',
+                display: 'inline-flex',
+                alignItems: 'center'
+              }}
+            >
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: '6px' }} />
+              Add Gift
+            </button>
+          </div>
+        )}
+
+        <div className="no-gifts" style={{ 
+          textAlign: 'center', 
+          padding: '40px 20px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+        }}>
+          <p>No gifts found. {isOrganizer && 'Create your first gift!'}</p>
+          {isOrganizer && (
+            <button 
+              onClick={handleAddGift} 
+              className="create-link" 
+              style={{
+                marginTop: '15px',
+                padding: '10px 20px',
+                backgroundColor: '#5c6bc0',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center'
+              }}
+            >
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: '6px' }} />
+              Add a gift
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gift-list-container">
-      {!isPublic && (
-        <div className="gift-list-header">
-          <h2>Gift List</h2>
-          {isOrganizer && (
-            <Link to={`/events/${effectiveEventId}/gifts/create`} className="create-button">
-              <FontAwesomeIcon icon={faPlus} />&nbsp;Add Gift
-            </Link>
+      {/* Affichage des boutons d'action sans titre */}
+      {!isPublic && isOrganizer && (
+        <div className="gift-actions-bar">
+          <button 
+            onClick={handleAddGift} 
+            className="gift-action-button add-gift-button"
+          >
+            <FontAwesomeIcon icon={faPlus} className="button-icon" />
+            Add Gift
+          </button>
+          
+          {onReorderClick && gifts.length > 0 && (
+            <button 
+              onClick={handleReorderClick}
+              className="gift-action-button reorder-gift-button"
+            >
+              <FontAwesomeIcon icon={faSort} className="button-icon" />
+              Reorder Gifts
+            </button>
           )}
         </div>
       )}
 
-      {!isPublic && (
+      {/* Barre de filtres */}
+      {!isPublic && gifts.length > 0 && (
         <div className="gift-list-filters">
           <select 
             className="filter-select"
@@ -276,6 +400,7 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
         </div>
       )}
 
+      {/* En-tête pour mode public */}
       {isPublic && (
         <div className="gift-public-header">
           <h3>Gift List</h3>
@@ -286,9 +411,10 @@ const GiftList = ({ isOrganizer = false, providedEventId = null, guestId = null,
         </div>
       )}
 
+      {/* Affichage des cadeaux selon le mode (public, grid ou list) */}
       {isPublic ? (
         <div className="gift-public-grid">
-          {gifts.map(gift => (
+          {filteredGifts.map(gift => (
             <GiftListItem
               key={gift._id}
               gift={gift}

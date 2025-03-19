@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { guestService } from '../../services';
-import '../../styles/EventTabs.css'
+import '../../styles/events.css';
 
 const EventGuestList = ({ eventId }) => {
   const [guests, setGuests] = useState([]);

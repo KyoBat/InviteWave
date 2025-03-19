@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { createGift, getGiftById, updateGift } from '../../services/gift'; // Supprimez uploadImage
+import { createGift, getGiftById, updateGift } from '../../services/gift';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTimes, faUpload } from '@fortawesome/free-solid-svg-icons';
-// En haut de GiftForm.js
-import config from '../../config'; // Chemin relatif à vérifier
+import config from '../../config';
 
 const GiftForm = () => {
   const { eventId, giftId } = useParams();
@@ -45,104 +44,20 @@ const GiftForm = () => {
           imageUrl: imageUrl || ''
         });
         if (imageUrl) {
-          setImagePreview(imageUrl ? `${config.urlImage}/uploads/${imageUrl}` : null);
-          console.log('Image URL (GridView):', `${config.urlImage}/uploads/${imageUrl}`);
+          if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+            setImagePreview(imageUrl);
+          } else {
+            // Sinon on construit l'URL complète
+            setImagePreview(`${config.apiUrl}/uploads/${imageUrl}`);
+          }
         }
-      } else {
-        setError('Error retrieving gift data');
       }
     } catch (err) {
-      setError(err.message || 'An error occurred');
-      console.error('Error retrieving gift data:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
+      setError(errorMessage);
+      console.error('Error loading gift:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-  
-    try {
-      // Validate form
-      if (!formData.name.trim()) {
-        throw new Error('Gift name is required');
-      }
-  
-      if (formData.quantity < 1) {
-        throw new Error('Quantity must be at least 1');
-      }
-  
-      let response;
-  
-      // Si nous avons un nouveau fichier image
-      if (imageFile) {
-        // Utiliser FormData seulement quand il y a un fichier
-        const formDataToSend = new FormData();
-        formDataToSend.append('name', formData.name);
-        formDataToSend.append('quantity', formData.quantity.toString());
-        formDataToSend.append('isEssential', formData.isEssential.toString());
-        formDataToSend.append('description', formData.description || '');
-        formDataToSend.append('image', imageFile);
-        
-        console.log('Envoi avec image:', {
-          name: formData.name,
-          hasImage: true
-        });
-        
-        console.log('FormData envoyé:', {
-          name: formData.name,
-          quantity: formData.quantity,
-          isEssential: formData.isEssential,
-          description: formData.description,
-          imageUrl: formData.imageUrl,
-          hasImageFile: !!imageFile
-        });
-
-        console.log('FormData créé, contient image:', imageFile.name);
-        console.log('Type de imageFile:', imageFile instanceof File);
-
-        
-        if (isEditMode) {
-          response = await updateGift(eventId, giftId, formDataToSend);
-        } else {
-          response = await createGift(eventId, formDataToSend);
-        }
-      } else {
-        // Utiliser JSON quand il n'y a pas de fichier
-        const dataToSend = {
-          name: formData.name,
-          quantity: parseInt(formData.quantity),
-          isEssential: formData.isEssential,
-          description: formData.description || ''
-        };
-        
-        // Si on est en mode édition et qu'on a une URL d'image existante
-        if (isEditMode && formData.imageUrl) {
-          dataToSend.imageUrl = formData.imageUrl;
-        }
-        
-        console.log('Envoi sans image:', dataToSend);
-        
-        if (isEditMode) {
-          response = await updateGift(eventId, giftId, dataToSend);
-        } else {
-          response = await createGift(eventId, dataToSend);
-        }
-      }
-  
-      if (response.data && response.data.success) {
-        // Redirect to gift list after success
-        navigate(`/events/${eventId}/gifts`);
-      } else {
-        throw new Error('Error saving gift');
-      }
-    } catch (err) {
-      setError(err.message || 'An error occurred');
-      console.error('Error saving gift:', err);
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -153,6 +68,7 @@ const GiftForm = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -161,7 +77,7 @@ const GiftForm = () => {
         return;
       }
       setImageFile(file);
-  
+
       // Create URL for preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -170,9 +86,78 @@ const GiftForm = () => {
       reader.readAsDataURL(file);
     }
   };
-  
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      // Validate form
+      if (!formData.name.trim()) {
+        throw new Error('Gift name is required');
+      }
+
+      if (formData.quantity < 1) {
+        throw new Error('Quantity must be at least 1');
+      }
+
+      let response;
+
+      // Si nous avons un nouveau fichier image
+      if (imageFile) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('description', formData.description || '');
+        formDataToSend.append('quantity', formData.quantity.toString());
+        formDataToSend.append('isEssential', formData.isEssential.toString());
+        formDataToSend.append('image', imageFile);
+        
+        if (isEditMode) {
+          response = await updateGift(eventId, giftId, formDataToSend);
+        } else {
+          response = await createGift(eventId, formDataToSend);
+        }
+      } else {
+        const dataToSend = {
+          name: formData.name,
+          description: formData.description || '',
+          quantity: parseInt(formData.quantity),
+          isEssential: formData.isEssential
+        };
+        
+        if (isEditMode && formData.imageUrl) {
+          dataToSend.imageUrl = formData.imageUrl;
+        }
+        
+        if (isEditMode) {
+          response = await updateGift(eventId, giftId, dataToSend);
+        } else {
+          response = await createGift(eventId, dataToSend);
+        }
+      }
+
+      if (response.data && response.data.success) {
+        navigate(`/events/${eventId}`, { 
+          replace: true,
+          state: { fromGiftForm: true, activeTab: 2 }
+        });
+      } else {
+        throw new Error(response.data?.message || 'Error saving gift');
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred');
+      console.error('Error saving gift:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleCancel = () => {
-    navigate(`/events/${eventId}/gifts`);
+    navigate(`/events/${eventId}`, { 
+      replace: true,
+      state: { activeTab: 2 }
+    });
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -183,34 +168,40 @@ const GiftForm = () => {
 
       {error && <div className="error-message">{error}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Name*</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Gift name"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Detailed description"
-            rows="4"
-          />
-        </div>
-
-        <div className="form-row">
+      <form onSubmit={handleSubmit} className="improved-gift-form">
+        <div className="form-section">
           <div className="form-group">
+            <label htmlFor="name">Name*</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Gift name"
+              required
+              className="form-control"
+            />
+          </div>
+        </div>
+
+        <div className="form-section">
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Detailed description"
+              rows="4"
+              className="form-control"
+            />
+          </div>
+        </div>
+
+        <div className="form-section form-row-flex">
+          <div className="form-group form-group-half">
             <label htmlFor="quantity">Quantity*</label>
             <input
               type="number"
@@ -220,10 +211,11 @@ const GiftForm = () => {
               onChange={handleChange}
               min="1"
               required
+              className="form-control"
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-group form-group-half">
             <label htmlFor="isEssential">Priority</label>
             <div className="checkbox-container">
               <input
@@ -232,33 +224,36 @@ const GiftForm = () => {
                 name="isEssential"
                 checked={formData.isEssential}
                 onChange={handleChange}
+                className="checkbox-input"
               />
               <label htmlFor="isEssential" className="checkbox-label">Mark as essential</label>
             </div>
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="image">Image (optional)</label>
-          <div className="file-input-container">
-            <input
-              type="file"
-              id="image"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="file-input"
-            />
-            <label htmlFor="image" className="file-input-label">
-              <FontAwesomeIcon icon={faUpload} /> Choose an image
-            </label>
-          </div>
-          <p className="form-note">Recommended format: JPG or PNG, max size: 2MB</p>
-
-          {imagePreview && (
-            <div className="image-preview">
-              <img src={imagePreview} alt="Preview" />
+        <div className="form-section">
+          <div className="form-group">
+            <label htmlFor="image">Image (optional)</label>
+            <div className="file-input-container">
+              <input
+                type="file"
+                id="image"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="file-input"
+              />
+              <label htmlFor="image" className="file-input-label">
+                <FontAwesomeIcon icon={faUpload} /> Choose an image
+              </label>
             </div>
-          )}
+            <p className="form-note">Recommended format: JPG or PNG, max size: 2MB</p>
+
+            {imagePreview && (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="form-actions">

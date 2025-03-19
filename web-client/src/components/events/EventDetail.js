@@ -1,6 +1,6 @@
 // src/components/events/EventDetail.js
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'; // Ajouter useLocation
 import { format } from 'date-fns';
 import { eventService } from '../../services';
 import { invitationService } from '../../services';
@@ -29,6 +29,7 @@ const EventDetail = () => {
   
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Ajouter cette ligne
   
   useEffect(() => {
     const fetchEvent = async () => {
@@ -48,10 +49,20 @@ const EventDetail = () => {
   
   // Charger les invitations lorsque l'onglet est sélectionné
   useEffect(() => {
+    // Vérifier si on vient d'un formulaire de cadeau ou si activeTab est spécifié
+    if (location.state && (location.state.fromGiftForm || location.state.activeTab === 2)) {
+      setTabIndex(2); // Sélectionner l'onglet Gifts (index 2)
+      
+      // Important: nettoyer l'état après avoir appliqué la redirection
+      // Cela évite que la redirection persiste après le premier rendu
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    
+    // Si l'onglet Invitations est sélectionné, charger les invitations
     if (tabIndex === 1) {
       fetchInvitations();
     }
-  }, [tabIndex, id]);
+  }, [location, navigate]);
   
   const fetchInvitations = async () => {
     try {
@@ -463,9 +474,9 @@ const EventDetail = () => {
         </TabPanel>
         
         <TabPanel>
-          <div className="event-detail-section">
+          {/* <div className="event-detail-section">
             <h2>Gift List</h2>
-          </div>
+          </div> */}
           <GiftManagement isOrganizer={isOrganizer} enableReordering={isOrganizer} eventId={id} />
         </TabPanel>
       </Tabs>

@@ -125,7 +125,6 @@ const EventForm = ({ isEdit = false }) => {
       const dateObj = new Date(formData.date);
       const [hours, minutes] = formData.time.split(':');
       dateObj.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-      //const dateTime = new Date();
       
       const eventData = {
         name: formData.name,
@@ -141,11 +140,18 @@ const EventForm = ({ isEdit = false }) => {
       
       if (isEdit) {
         await eventService.updateEvent(id, eventData);
+        // Rediriger vers la page de détails de l'événement après modification
+        navigate(`/events/${id}`);
       } else {
-        await eventService.createEvent(eventData);
+        const response = await eventService.createEvent(eventData);
+        // Si la création de l'événement renvoie un ID, rediriger vers ses détails
+        if (response && response._id) {
+          navigate(`/events/${response._id}`);
+        } else {
+          // Sinon, rediriger vers la liste des événements
+          navigate('/events');
+        }
       }
-      
-      navigate('/events');
     } catch (error) {
       setError(error.displayMessage || `Failed to ${isEdit ? 'update' : 'create'} event`);
       console.error('Event form error:', error);
