@@ -1,0 +1,13 @@
+/backend/uploads/
+node_modules/
+
+# Ignorer les fichiers de configuration locale
+.env
+.env.local
+
+# Ignorer les fichiers de logs
+*.log
+
+# Ignorer les dossiers de dépendances
+dist/
+build/

@@ -1,0 +1,408 @@
+/* src/components/events/EventStats.css */
+.event-stats-container {
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.event-stats-container h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Disposition principale en deux colonnes */
+.stats-main-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+.stats-column {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+}
+
+.stats-left-column {
+  flex: 1;
+  min-width: 300px;
+}
+
+.stats-right-column {
+  flex: 2;
+  min-width: 500px;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Cartes de statistiques verticales */
+.stats-dashboard {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.stats-cards.vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 0;
+}
+
+.stats-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(92, 107, 192, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  color: #5c6bc0;
+  font-size: 1.4rem;
+}
+
+.stats-card-content {
+  flex: 1;
+}
+
+.stats-card h3 {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 6px;
+  font-weight: 500;
+}
+
+.stats-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  line-height: 1;
+}
+
+.stats-subtitle {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Carte de détails */
+.stats-detail-card {
+  background-color: #f5f7ff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.stats-detail-card h4 {
+  font-size: 1rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.stats-detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.stats-detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.detail-value {
+  font-weight: 600;
+}
+
+.yes-text, .yes-cell {
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.no-text, .no-cell {
+  color: #F44336;
+  font-weight: 500;
+}
+
+.maybe-text, .maybe-cell {
+  color: #FF9800;
+  font-weight: 500;
+}
+
+.pending-text, .pending-cell {
+  color: #9E9E9E;
+  font-weight: 500;
+}
+
+/* Graphiques empilés */
+.stats-charts-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.stats-charts-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+.chart-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-charts-stacked .chart-container {
+  margin-bottom: 0;
+  box-shadow: none;
+  padding: 0;
+  background: transparent;
+}
+
+.chart-container h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.gift-stats-section {
+  margin-top: 50px;
+  width: 100%;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+  margin-top: 30px;
+}
+
+/* Tableau de statistiques */
+.category-stats {
+  margin-top: 40px;
+  width: 100%;
+}
+
+.category-stats h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.table-container {
+  overflow-x: auto;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 100%;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+
+.stats-table th {
+  background-color: #f5f7ff;
+  color: #333;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stats-table tr:last-child td {
+  border-bottom: none;
+}
+
+.stats-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.category-name {
+  font-weight: 600;
+  text-align: left !important;
+  color: #333;
+}
+
+.rate-cell {
+  min-width: 150px;
+}
+
+.progress-bar-container {
+  height: 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #333;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+}
+
+/* Styles spécifiques pour forcer les graphiques à s'afficher correctement */
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 300px;
+}
+
+.recharts-surface {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.recharts-legend-wrapper {
+  max-width: 100% !important;
+}
+
+/* Media queries pour la responsivité */
+@media (max-width: 1024px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stats-main-container {
+    flex-direction: column;
+  }
+  
+  .stats-left-column,
+  .stats-right-column {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-charts-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .event-stats-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .stats-value {
+    font-size: 1.5rem;
+  }
+  
+  .stats-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+}
+/* Ajoutez ces styles à votre EventStats.css */
+
+/* Ajustement pour les graphiques empilés */
+.stats-charts-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+/* Ajustement pour les hauteurs des graphiques dans la colonne de droite */
+.stats-right-column .chart-container {
+  min-height: 250px;
+  margin-bottom: 20px;
+}
+
+/* Mise à jour pour les media queries */
+@media (max-width: 1024px) {
+  .stats-charts-stacked {
+    flex-direction: column;
+  }
+  
+  .stats-right-column .chart-container {
+    min-height: 300px;
+  }
+}
+
+/* S'assurer que le graphique des cadeaux populaires est en pleine largeur */
+.full-width {
+  width: 100%;
+  grid-column: 1 / -1;
+  margin-top: 30px;
+  box-sizing: border-box;
+}

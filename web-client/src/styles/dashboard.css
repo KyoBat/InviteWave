@@ -1,0 +1,268 @@
+/* src/styles/dashboard.css */
+
+.dashboard-container {
+    padding: 20px;
+  }
+  
+  .dashboard-header {
+    margin-bottom: 30px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .dashboard-header p {
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .stat-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 24px;
+  }
+  
+  .events-icon {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  .upcoming-icon {
+    background-color: #fff8e1;
+    color: #f57c00;
+  }
+  
+  .guests-icon {
+    background-color: #e8f5e9;
+    color: #388e3c;
+  }
+  
+  .invitations-icon {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+  }
+  
+  .stat-content {
+    flex: 1;
+  }
+  
+  .stat-content h3 {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .dashboard-sections {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .dashboard-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .section-header h2 {
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .view-all-link {
+    color: #5c6bc0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+  
+  .event-card {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid #eee;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .event-card h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .event-date,
+  .event-location {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+  
+  .view-event-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #5c6bc0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .recent-guests-list {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  .guests-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .guests-table th,
+  .guests-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+  }
+  
+  .guests-table th {
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .guests-table td {
+    color: #555;
+  }
+  
+  .dashboard-actions {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .action-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  
+  .action-button:hover {
+    opacity: 0.9;
+    text-decoration: none;
+  }
+  
+  .create-event {
+    background-color: #5c6bc0;
+  }
+  
+  .add-guest {
+    background-color: #4caf50;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #666;
+  }
+  
+  .create-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 15px;
+    background-color: #5c6bc0;
+    color: white;
+    border-radius: 4px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 992px) {
+    .dashboard-sections {
+      grid-template-columns: 1fr;
+    }
+    
+    .dashboard-section {
+      margin-bottom: 20px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-stats {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    .events-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .dashboard-actions {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .dashboard-stats {
+      grid-template-columns: 1fr;
+    }
+  }

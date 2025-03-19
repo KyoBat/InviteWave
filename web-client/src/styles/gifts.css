@@ -1,0 +1,1533 @@
+/* web-client/src/styles/gifts.css */
+
+/* ===== Gift List Styles ===== */
+.gift-list-container {
+  padding: 20px;
+}
+
+.gift-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.gift-list-header h2 {
+  font-size: 24px;
+  color: #333;
+}
+
+.create-button {
+  background-color: #5c6bc0;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.create-button:hover {
+  background-color: #3f51b5;
+  text-decoration: none;
+}
+
+.create-button i, 
+.create-button svg {
+  margin-right: 8px;
+}
+
+/* Filtres et contrôles */
+.gift-list-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  align-items: center;
+}
+
+.filter-select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 180px;
+  background-color: #f5f5f5;
+}
+
+.view-toggle {
+  display: flex;
+  margin-left: auto;
+}
+
+.view-toggle-button {
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #666;
+  cursor: pointer;
+}
+
+.view-toggle-button:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.view-toggle-button:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.view-toggle-button.active {
+  background-color: #5c6bc0;
+  color: white;
+  border-color: #5c6bc0;
+}
+
+/* ===== Gift Grid View ===== */
+.gifts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.gift-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gift-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gift-card.reserved {
+  opacity: 0.7;
+}
+
+.gift-card.partially-reserved {
+  border: 2px solid #ffb74d;
+}
+
+.gift-card-image {
+  height: 160px;
+  position: relative;
+  overflow: hidden;
+  display: flex;          /* Ajout pour centrer l'image */
+  align-items: center;    /* Ajout pour centrer l'image */
+  justify-content: center; /* Ajout pour centrer l'image */
+  background-color: #f5f5f5; /* Fond pour les images non chargées */
+}
+
+.gift-card-image img {
+  max-width: 100%;        /* Remplace width: 100% */
+  max-height: 100%;       /* Remplace height: 100% */
+  object-fit: contain;    /* Remplace cover par contain */
+  margin: 0 auto;         /* Centrer horizontalement */
+}
+
+.gift-card-no-image {
+  background-color: #e8eaf6;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6bc0;
+  font-size: 36px;
+}
+
+.gift-status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 1;
+}
+
+.status-available {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-reserved {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-partially {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.gift-card-content {
+  padding: 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gift-card-content h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.gift-description {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+  line-height: 1.4;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.gift-quantity {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.gift-quantity-label {
+  font-size: 14px;
+  color: #666;
+  margin-right: 10px;
+}
+
+.gift-quantity-progress {
+  flex: 1;
+  height: 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.gift-quantity-bar {
+  height: 100%;
+  background-color: #5c6bc0;
+}
+
+.gift-quantity-text {
+  font-size: 12px;
+  color: #666;
+  margin-left: 8px;
+}
+
+.gift-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.view-button, 
+.reserve-button,
+.unreserve-button,
+.edit-button,
+.delete-button {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+}
+
+.view-button {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.reserve-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.unreserve-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.edit-button {
+  background-color: #5c6bc0;
+  color: white;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.view-button:hover,
+.reserve-button:hover,
+.unreserve-button:hover,
+.edit-button:hover,
+.delete-button:hover {
+  opacity: 0.9;
+  text-decoration: none;
+}
+
+/* ===== Gift List View ===== */
+.gifts-table-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.gifts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gifts-table th,
+.gifts-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.gifts-table th {
+  background-color: #f9f9f9;
+  font-weight: 600;
+  color: #333;
+}
+
+.gifts-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.gifts-table tr.reserved {
+  background-color: #f5f5f5;
+  color: #999;
+}
+
+.gift-thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;           /* Ajout pour centrer l'image */
+  align-items: center;     /* Ajout pour centrer l'image */
+  justify-content: center; /* Ajout pour centrer l'image */
+}
+
+.gift-thumbnail img {
+  max-width: 100%;         /* Remplace width: 100% */
+  max-height: 100%;        /* Remplace height: 100% */
+  object-fit: contain;     /* Remplace cover par contain */
+}
+
+.gift-thumbnail-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #e8eaf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6bc0;
+}
+
+.gift-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+}
+
+/* ===== Gift Form Styles ===== */
+.gift-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.gift-form-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 10px;
+  width: auto;
+}
+
+.checkbox-label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.file-input-container {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.file-input {
+  position: absolute;
+  left: -9999px;
+}
+
+.file-input-label {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+}
+
+.file-input-label:hover {
+  background-color: #e9e9e9;
+}
+
+.image-preview {
+  margin-top: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.image-preview img {
+  width: 100%;
+}
+
+.form-note {
+  margin: 5px 0 15px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* ===== Gift Detail Styles ===== */
+.gift-detail-container {
+  padding: 20px;
+}
+
+.gift-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.gift-detail-header h2 {
+  font-size: 24px;
+  color: #333;
+}
+
+.gift-detail-content {
+  display: flex;
+  gap: 20px;
+}
+
+.gift-detail-main {
+  flex: 3;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.gift-detail-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gift-image {
+  width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  display: flex;           /* Ajout pour centrer l'image */
+  align-items: center;     /* Ajout pour centrer l'image */
+  justify-content: center; /* Ajout pour centrer l'image */
+  background-color: #f5f5f5; /* Fond pour les images non chargées */
+}
+
+.gift-image img {
+  max-width: 100%;         /* Remplace width: 100% */
+  max-height: 100%;        /* Remplace height: 100% */
+  object-fit: contain;     /* Garde object-fit: contain */
+  margin: 0 auto;          /* Centrer horizontalement */
+}
+
+.gift-no-image {
+  width: 100%;
+  height: 200px;
+  background-color: #e8eaf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #5c6bc0;
+  font-size: 48px;
+}
+
+.gift-info h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.gift-info p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.gift-quantity-detail {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.gift-quantity-detail h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.quantity-progress {
+  height: 12px;
+  background-color: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.quantity-progress-bar {
+  height: 100%;
+  background-color: #5c6bc0;
+}
+
+.quantity-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #666;
+}
+
+.reserved-by {
+  margin-top: 20px;
+}
+
+.reserved-by h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.reservations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reservations-table th,
+.reservations-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.reservations-table th {
+  font-weight: 600;
+  color: #333;
+  background-color: #f9f9f9;
+}
+
+.reservation-message {
+  font-style: italic;
+  color: #666;
+}
+
+.no-reservations {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.action-panel {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.action-panel h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.gift-status-info p {
+  margin-bottom: 10px;
+}
+
+.gift-status-info p strong {
+  display: inline-block;
+  width: 100px;
+}
+
+.status-available,
+.status-partially,
+.status-reserved {
+  font-weight: 500;
+}
+
+.reserve-form {
+  margin-top: 15px;
+}
+
+.reserve-form p {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.full-width-button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  margin-top: 10px;
+}
+
+.reserve-button-large {
+  background-color: #4caf50;
+  color: white;
+}
+
+.unreserve-button-large {
+  background-color: #f44336;
+  color: white;
+}
+
+.unavailable-message {
+  text-align: center;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  color: #666;
+  font-style: italic;
+}
+
+.unavailable-message svg {
+  display: block;
+  margin: 0 auto 10px;
+}
+
+.back-button {
+  background-color: #f5f5f5;
+  color: #333;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ddd;
+}
+
+.back-button svg,
+.back-button i {
+  margin-right: 5px;
+}
+
+/* ===== Gift Assignment Modal ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.gift-assignment-modal {
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #5c6bc0;   /* Fond coloré pour meilleure visibilité */
+  color: white;                /* Texte blanc pour contraste */
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: white;                /* Texte blanc pour contraste */
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: white;                /* Texte blanc pour contraste */
+  cursor: pointer;
+  opacity: 0.8;                /* Légère transparence */
+}
+
+.modal-close:hover {
+  opacity: 1;                  /* Opacité pleine au survol */
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.gift-header {
+  margin-bottom: 20px;
+}
+
+.gift-header h3 {
+  font-size: 18px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.gift-status {
+  font-size: 14px;
+  color: #666;
+  padding: 5px 10px;          /* Padding pour meilleure lisibilité */
+  border-radius: 4px;         /* Coins arrondis */
+  background-color: #f5f5f5;  /* Fond léger pour mise en évidence */
+  display: inline-block;      /* Pour appliquer le padding */
+}
+
+.quantity-select {
+  margin-bottom: 20px;
+}
+
+.quantity-select label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.quantity-select input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;            /* Taille de police plus lisible */
+}
+
+.message-input {
+  margin-bottom: 20px;
+}
+
+.message-input label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.message-input textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;      /* Utiliser la même police que le reste */
+  font-size: 14px;           /* Taille de police cohérente */
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions button {
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  display: flex;              /* Pour aligner les icônes et le texte */
+  align-items: center;        /* Pour aligner les icônes et le texte */
+  gap: 5px;                   /* Espace entre l'icône et le texte */
+}
+
+.cancel-button {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.confirm-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+/* ===== Public View Styles ===== */
+.gift-public-list {
+  margin-top: 30px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.gift-public-header {
+  margin-bottom: 20px;
+}
+
+.gift-public-header h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.gift-public-header p {
+  color: #666;
+  font-size: 14px;
+}
+
+.gift-list-instructions {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 4px solid #5c6bc0;
+}
+
+.gift-list-instructions p {
+  margin: 0;
+  color: #555;
+}
+
+.gift-public-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 15px;
+}
+
+.gift-public-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s;
+  height: 100%;                /* Hauteur fixe pour uniformité */
+  display: flex;               /* Utilisé pour la mise en page en colonne */
+  flex-direction: column;      /* Mise en page en colonne */
+}
+
+.gift-public-card:hover {
+  transform: translateY(-3px);
+}
+
+.gift-public-card.reserved {
+  opacity: 0.7;
+}
+
+.gift-public-card.reserved::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.1) 10px,
+    rgba(198, 40, 40, 0.05) 10px,
+    rgba(198, 40, 40, 0.05) 20px
+  );
+  pointer-events: none;
+}
+
+.gift-public-image {
+  height: 120px;
+  position: relative;
+  display: flex;               /* Ajout pour centrer l'image */
+  align-items: center;         /* Ajout pour centrer l'image */
+  justify-content: center;     /* Ajout pour centrer l'image */
+  background-color: #f5f5f5;   /* Fond pour les images non chargées */
+}
+
+.gift-public-image img {
+  max-width: 100%;             /* Remplace width: 100% */
+  max-height: 100%;            /* Remplace height: 100% */
+  object-fit: contain;         /* Remplace cover par contain */
+  margin: 0 auto;              /* Centrer horizontalement */
+}
+
+.gift-public-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #e8eaf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6bc0;
+  font-size: 24px;
+}
+
+.gift-public-content {
+  padding: 12px;
+  flex-grow: 1;                /* Prendre l'espace restant */
+  display: flex;               /* Pour la mise en page en colonne */
+  flex-direction: column;      /* Mise en page en colonne */
+}
+
+.gift-public-content h4 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gift-public-progress {
+  margin-bottom: 10px;
+}
+
+.gift-public-progress-bar {
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.gift-public-progress-fill {
+  height: 100%;
+  background-color: #5c6bc0;
+}
+
+.gift-public-progress-text {
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+}
+
+.gift-public-actions {
+  display: flex;
+  margin-top: auto;            /* Pousser en bas du conteneur */
+}
+
+.gift-public-button {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 13px;
+  text-align: center;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+/* ===== My Reservations Section ===== */
+.my-reservations {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.my-reservations h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.my-reservations-.my-reservations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.my-reservation-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.my-reservation-item:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  flex: 1;
+  font-weight: 500;
+  color: #333;
+}
+
+.item-quantity {
+  font-size: 14px;
+  color: #666;
+  margin-right: 15px;
+}
+
+.unreserve-link {
+  color: #f44336;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+
+.unreserve-link:hover {
+  text-decoration: underline;
+}
+
+.no-reservations-message {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 10px;
+}
+
+/* ===== Gift Management Styles ===== */
+.gift-management-container {
+  padding: 10px 0;
+}
+
+.reordering-controls {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reorder-button {
+  background-color: #5c6bc0;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.reordering-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background-color: #f5f5f5;
+  color: #333;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.reorder-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.reorder-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reorder-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  transition: background-color 0.2s;
+}
+
+.reorder-item:hover {
+  background-color: #f9f9f9;
+}
+
+.reorder-grip {
+  margin-right: 15px;
+  color: #999;
+  cursor: grab;
+}
+
+.reorder-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reorder-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.reorder-status {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ===== Essential Tag ===== */
+.essential-tag {
+  display: inline-block;
+  background-color: #ff9800;
+  color: white;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+/* ===== Gift Essential Tag (positioned) ===== */
+.gift-essential-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #ff9800;
+  color: rgba(0, 0, 0, 0.8);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ===== No Content States ===== */
+.no-gifts {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.no-gifts p {
+  margin-bottom: 20px;
+}
+
+.create-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #5c6bc0;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.create-link:hover {
+  background-color: #3f51b5;
+}
+
+.not-found {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 18px;
+}
+
+/* ===== Loading and Error States ===== */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #5c6bc0;
+  font-size: 16px;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* ===== Error Alert (pour la modal) ===== */
+.error-alert {
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #ffebee;
+  color: #c62828;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===== Responsive Styles ===== */
+@media (max-width: 992px) {
+  .gift-detail-content {
+    flex-direction: column;
+  }
+  
+  .gift-detail-sidebar {
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .gift-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .gift-list-header h2 {
+    margin-bottom: 10px;
+  }
+  
+  .gift-list-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .view-toggle {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+  }
+  
+  .view-toggle-button {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .gifts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .gift-detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .gift-actions {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .gift-public-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .gifts-table th:nth-child(3),
+  .gifts-table td:nth-child(3) {
+    display: none;
+  }
+  
+  .modal-content {
+    width: 95%;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+  
+  .gift-public-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .gift-card-actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+/* ===== Support pour le drag-and-drop (pour les organisateurs) ===== */
+.gift-card[draggable="true"] {
+cursor: grab;
+}
+
+.gift-card[draggable="true"]:active {
+cursor: grabbing;
+}
+/* Correction pour les boutons Add Gift et Reorder Gifts */
+
+/* Style principal pour les boutons d'action */
+/* Correction pour les boutons Add Gift et Reorder Gifts (alignés à gauche) */
+
+/* Style principal pour les boutons d'action */
+.gift-action-button {
+  background-color: #5c6bc0;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 15px;
+  transition: background-color 0.2s;
+}
+
+.gift-action-button:hover {
+  background-color: #3f51b5;
+}
+
+.gift-action-button svg,
+.gift-action-button i {
+  margin-right: 5px;
+}
+
+/* Aligner les boutons à gauche */
+.gift-action-buttons {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gift-action-buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .gift-action-button {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+}
+/* Styles pour les boutons de gestion des cadeaux */
+
+/* Container pour les actions de gestion */
+.gift-management-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Style commun pour tous les boutons d'action */
+.create-gift-button,
+.reorder-button,
+.save-button,
+.cancel-button {
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  border: none;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+/* Style spécifique pour le bouton de création */
+.create-gift-button {
+  background-color: #5c6bc0;
+  color: white;
+}
+
+.create-gift-button:hover {
+  background-color: #3f51b5;
+  text-decoration: none;
+}
+
+/* Style pour le bouton de réorganisation */
+.reorder-button {
+  background-color: #5c6bc0;
+  color: white;
+}
+
+.reorder-button:hover {
+  background-color: #3f51b5;
+}
+
+/* Style pour les boutons de sauvegarde et annulation */
+.reordering-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #388e3c;
+}
+
+.cancel-button {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Styles pour les boutons désactivés */
+.create-gift-button:disabled,
+.reorder-button:disabled,
+.save-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Styles responsives pour les petits écrans */
+@media (max-width: 768px) {
+  .gift-management-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .create-gift-button,
+  .reorder-button,
+  .reordering-actions {
+    width: 100%;
+  }
+  
+  .reordering-actions {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .save-button,
+  .cancel-button {
+    flex: 1;
+    justify-content: center;
+  }
+}

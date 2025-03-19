@@ -1,0 +1,334 @@
+/* src/styles/guests.css */
+
+/* Guest List Styles */
+.guest-list-container {
+    padding: 20px;
+  }
+  
+  .guest-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .guest-list-header h2 {
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .guest-list-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-container {
+    flex: 2;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .category-filter {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  
+  .category-filter label {
+    margin-right: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .category-select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .guest-list {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .guest-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .guest-table th,
+  .guest-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .guest-table th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .guest-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .guest-email,
+  .guest-phone {
+    color: #666;
+  }
+  
+  .guest-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .guest-actions button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .edit-button {
+    background-color: #5c6bc0;
+    color: white;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .category-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .category-family {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .category-friends {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  .category-colleagues {
+    background-color: #e8eaf6;
+    color: #3949ab;
+  }
+  
+  .category-other {
+    background-color: #f5f5f5;
+    color: #616161;
+  }
+  
+  .no-guests,
+  .no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+  }
+  
+  .create-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #5c6bc0;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .create-link:hover {
+    background-color: #3f51b5;
+    text-decoration: none;
+  }
+  
+  .import-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .import-button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .import-button:hover {
+    background-color: #388e3c;
+  }
+  
+  /* Guest Form Styles */
+  .guest-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .guest-form-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .form-note {
+    margin: 15px 0;
+    font-size: 13px;
+    color: #666;
+  }
+  
+  /* Guest Import Styles */
+  .guest-import-container {
+    padding: 20px;
+  }
+  
+  .guest-import-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .import-instructions {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .import-instructions h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .import-instructions ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .import-instructions li {
+    margin-bottom: 5px;
+    color: #555;
+  }
+  
+  .sample-button {
+    padding: 8px 15px;
+    background-color: #5c6bc0;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .import-form {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .file-input-container {
+    margin-bottom: 20px;
+  }
+  
+  .file-input-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .preview-container {
+    margin-bottom: 20px;
+  }
+  
+  .preview-container h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  
+  .preview-table th,
+  .preview-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .preview-table th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .preview-note {
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+  }
+  
+  .import-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .guest-list-filters {
+      flex-direction: column;
+    }
+    
+    .category-filter {
+      margin-top: 10px;
+    }
+    
+    .guest-table {
+      font-size: 14px;
+    }
+    
+    .guest-actions {
+      flex-direction: column;
+      gap: 5px;
+    }
+  }
